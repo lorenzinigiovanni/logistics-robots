@@ -1,0 +1,11 @@
+services:
+  ros2:
+    build:
+      context: ros2-humble
+      dockerfile: Dockerfile
+    ports:
+      - "6080:80"
+    volumes:
+      - type: bind
+        source: ./../
+        target: /logistics-robots
