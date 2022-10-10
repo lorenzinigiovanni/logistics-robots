@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<sdf version="1.6"> 
+<model name='povo'>
+      <static>1</static>
+      <link name='walls'>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+
+        <visual name='Walls_Visual'>
+          <geometry>
+            <mesh>
+              <uri>model://povo/meshes/povo.dae</uri>
+            </mesh>
+          </geometry>
+          <cast_shadows>1</cast_shadows>
+          <transparency>0</transparency>
+        </visual>
+
+        <collision name='Walls_Collision'>
+          <geometry>
+            <mesh>
+              <uri>model://povo/meshes/povo.dae</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        
+      </link>
+    </model>
+</sdf>

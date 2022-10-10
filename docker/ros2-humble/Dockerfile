@@ -46,12 +46,14 @@ RUN apt-get update -q && \
     apt-get install -y \
     ros-${ROS_DISTRO}-dynamixel-sdk \
     ros-${ROS_DISTRO}-turtlebot3-msgs \
-    ros-${ROS_DISTRO}-turtlebot3 && \
+    ros-${ROS_DISTRO}-turtlebot3 \
+    ros-${ROS_DISTRO}-turtlebot3-gazebo && \
     rm -rf /var/lib/apt/lists/*
 
 RUN gosu ubuntu rosdep update && \
     grep -F "source /opt/ros/${ROS_DISTRO}/setup.bash" /home/ubuntu/.bashrc || echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/ubuntu/.bashrc && \
     echo "export ROS_DOMAIN_ID=30 #TURTLEBOT3" >> /home/ubuntu/.bashrc && \
+    echo "export TURTLEBOT3_MODEL=burger" >> /home/ubuntu/.bashrc && \
     sudo chown ubuntu:ubuntu /home/ubuntu/.bashrc
 
 RUN echo 'sed -i -e "s/palette_color_4=rgb([0-9,]*)/palette_color_4=rgb(51,61,255)/g" $HOME/.config/lxterminal/lxterminal.conf' > /usr/local/bin/update-lxterminal.sh && \
