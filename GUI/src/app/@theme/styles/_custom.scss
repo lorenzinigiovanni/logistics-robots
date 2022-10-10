@@ -1,0 +1,39 @@
+.table {
+  color: #ffffff;
+  background-color: null;
+}
+
+.table-striped {
+  tbody tr:nth-of-type(#{$table-striped-order}) {
+    background-color: rgba(#ffffff, .05);
+  }
+}
+
+.table-hover {
+  tbody tr {
+    @include hover() {
+      color: #ffffff;
+      background-color: rgba(#ffffff, .075);
+    }
+  }
+}
+
+.table-hover > tbody > tr {
+  cursor: pointer;
+} 
+
+a:link {
+  text-decoration: none !important;
+}
+
+a:visited {
+  text-decoration: none !important;
+}
+
+a:hover {
+  text-decoration: none !important;
+}
+
+a:active {
+  text-decoration: none !important;
+}
