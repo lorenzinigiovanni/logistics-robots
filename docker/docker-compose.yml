@@ -9,3 +9,17 @@ services:
       - type: bind
         source: ./../
         target: /logistics-robots
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=logistics_robots
+      - POSTGRES_USER=logistics_robots
+      - POSTGRES_PASSWORD=logistics_robots
+    ports:
+      - "5432:5432"
+    volumes: 
+      - db:/var/lib/postgresql/data
+
+volumes:
+  db:
+    driver: local
