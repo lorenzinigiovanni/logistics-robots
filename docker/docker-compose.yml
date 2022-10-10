@@ -19,6 +19,21 @@ services:
       - "5432:5432"
     volumes: 
       - db:/var/lib/postgresql/data
+  api:
+    build:
+      context: ./../
+      dockerfile: ./docker/node-api/Dockerfile
+    command: npm run debug
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+    volumes:
+      - ./../API:/usr/app
+      - /usr/app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
 
 volumes:
   db:
