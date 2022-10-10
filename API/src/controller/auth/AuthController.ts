@@ -53,6 +53,7 @@ export class AuthController {
                 user.name = req.body.fullName;
                 user.email = req.body.email;
                 user.active = false;
+                user.admin = false;
 
                 await user.setPassword(req.body.password);
 
@@ -68,7 +69,7 @@ export class AuthController {
                 try {
                     const user = await User.findOneOrFail({ where: { email: email } });
 
-                    const password = Math.random().toString(36).substr(2, 8);
+                    const password = Math.random().toString(36).substring(2, 8);
                     await user.setPassword(password);
 
                     await user.save();
