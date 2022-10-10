@@ -42,9 +42,6 @@ import { JwtInterceptor } from './auth/jwt.interceptor';
     NbDialogModule.forRoot(),
     NbWindowModule.forRoot(),
     NbToastrModule.forRoot(),
-    // NbChatModule.forRoot({
-    //   messageGoogleMapKey: 'AIzaSyA_wNuCzia92MAmdLRzmqitRGvCF7wCZPY',
-    // }),
     CoreModule.forRoot(),
     ThemeModule.forRoot(),
     NbEvaIconsModule,
