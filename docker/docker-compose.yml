@@ -9,3 +9,44 @@ services:
       - type: bind
         source: ./../
         target: /logistics-robots
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=logistics_robots
+      - POSTGRES_USER=logistics_robots
+      - POSTGRES_PASSWORD=logistics_robots
+    ports:
+      - "5432:5432"
+    volumes: 
+      - db:/var/lib/postgresql/data
+  api:
+    build:
+      context: ./../
+      dockerfile: ./docker/node-api/Dockerfile
+    command: npm run debug
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+    volumes:
+      - ./../API:/usr/app
+      - /usr/app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+  gui:
+    build:
+      context: ./../
+      dockerfile: ./docker/node-gui/Dockerfile
+    command: npm run debug
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./../GUI:/usr/app
+      - /usr/app/node_modules
+    ports:
+      - "4200:4200"
+
+volumes:
+  db:
+    driver: local
