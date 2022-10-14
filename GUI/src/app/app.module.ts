@@ -22,6 +22,7 @@ import {
 } from '@nebular/theme';
 import { NbEvaIconsModule } from '@nebular/eva-icons';
 import { AuthGuard } from './services/auth-guard.service';
+import { AdminGuard } from './services/admin-guard.service';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { TokenInterceptor } from './auth/token.interceptor';
 import { JwtInterceptor } from './auth/jwt.interceptor';
@@ -48,6 +49,7 @@ import { JwtInterceptor } from './auth/jwt.interceptor';
   ],
   providers: [
     AuthGuard,
+    AdminGuard,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: TokenInterceptor,
