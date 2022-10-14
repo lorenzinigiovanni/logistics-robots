@@ -22,6 +22,7 @@ export class AuthController {
                         'ID',
                         'name',
                         'password',
+                        'admin',
                     ],
                 });
 
@@ -40,6 +41,7 @@ export class AuthController {
                 const token = this.generateAccessToken({
                     ID: user.ID,
                     name: user.name,
+                    admin: user.admin,
                     picture: null,
                 });
 
