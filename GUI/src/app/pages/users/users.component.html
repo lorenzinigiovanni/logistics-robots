@@ -1,0 +1,27 @@
+<nb-card accent="primary">
+  <nb-card-header>
+    <div class="row">
+      <div class="col-12 text-center">Users</div>
+    </div>
+  </nb-card-header>
+  <nb-card-body>
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Active</th>
+          <th>Admin</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users | async" (click)="onEdit(user)">
+          <td>{{user.name}}</td>
+          <td>{{user.email}}</td>
+          <td><nb-checkbox [checked]=user.active disabled></nb-checkbox></td>
+          <td><nb-checkbox [checked]=user.admin disabled></nb-checkbox></td>
+        </tr>
+      </tbody>
+    </table>
+  </nb-card-body>
+</nb-card>

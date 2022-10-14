@@ -1,0 +1,93 @@
+<nb-card accent="primary">
+  <nb-card-header>
+    <div class="row">
+      <div class="col-1">
+        <button nbButton status="primary" [routerLink]="['/', 'pages', 'users']">
+          <nb-icon icon="arrow-ios-back-outline"></nb-icon>
+        </button>
+      </div>
+      <div class="col-10 text-center">{{user?.name}}</div>
+    </div>
+  </nb-card-header>
+  <nb-card-body>
+    <form [formGroup]="form" (ngSubmit)="onSubmit(form.value)">
+
+      <div class="row">
+        <div class="form-group col-6">
+          <label class="label">Name</label>
+          <input name="name" formControlName="name" nbInput type="text" placeholder="Mario Rossi" fullWidth
+            [status]="(form.controls.name.invalid) ? 'danger' : 'basic'" />
+        </div>
+        <div class="form-group col-6">
+          <label class="label">Email</label>
+          <input name="email" formControlName="email" nbInput type="text" placeholder="mario@rossi.it" fullWidth
+            [status]="(form.controls.email.invalid) ? 'danger' : 'basic'" />
+        </div>
+      </div>
+
+      <div class="row" *ngIf="admin && user.ID !== userID">
+        <div class="form-group col-12">
+          <nb-toggle formControlName="active">Active</nb-toggle>
+        </div>
+
+        <div class="form-group col-12">
+          <nb-toggle formControlName="admin">Admin</nb-toggle>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <button type="submit" nbButton fullWidth status="primary" [disabled]="!form.valid">
+          Save
+        </button>
+      </div>
+
+    </form>
+  </nb-card-body>
+</nb-card>
+
+<nb-card accent="primary" *ngIf="user.ID === userID">
+  <nb-card-header>
+    <div class="row">
+      <div class="col-12 text-center">Change password</div>
+    </div>
+  </nb-card-header>
+  <nb-card-body>
+    <form [formGroup]="passwordForm" (ngSubmit)="changePassword(passwordForm.value)">
+
+      <div class="row">
+        <div class="form-group col-6">
+          <label class="label">Old password</label>
+          <input name="oldPassword" formControlName="oldPassword" nbInput type="password" fullWidth
+            autocomplete="current-password" minlength="8" maxlength="50"
+            [status]="(passwordForm.controls.oldPassword.invalid) ? 'danger' : 'basic'" />
+        </div>
+        <div class="form-group col-6">
+          <label class="label">New password</label>
+          <input name="newPassword" formControlName="newPassword" nbInput type="password" fullWidth
+            autocomplete="new-password" minlength="8" maxlength="50"
+            [status]="(passwordForm.controls.newPassword.invalid) ? 'danger' : 'basic'" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <button type="submit" nbButton fullWidth status="primary" [disabled]="!passwordForm.valid">
+          Change password
+        </button>
+      </div>
+
+    </form>
+  </nb-card-body>
+</nb-card>
+
+<nb-card accent="primary">
+  <nb-card-header>
+    <div class="row">
+      <div class="col-12 text-center">Delete user</div>
+    </div>
+  </nb-card-header>
+  <nb-card-body>
+    <button (click)="deleteUser()" nbButton fullWidth status="danger">
+      Delete {{user?.name}}
+    </button>
+  </nb-card-body>
+</nb-card>
