@@ -6,6 +6,7 @@ import cors from 'cors';
 
 import { AuthController } from './controller/auth/AuthController';
 import { authenticateToken } from './middlewares/AuthenticateToken';
+import { UserController } from './controller/users/UserController';
 
 export class Main {
     static start(): void {
@@ -44,6 +45,7 @@ export class Main {
             app.use(authenticateToken);
 
             AuthController.route(app);
+            UserController.route(app);
 
             app.listen(3000);
             console.log('Express application is up and running on port 3000');
