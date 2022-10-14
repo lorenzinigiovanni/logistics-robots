@@ -96,6 +96,17 @@ export abstract class ApiService {
       );
   }
 
+  protected putRaw(url: string, body: object): Observable<object> {
+    return this.http
+      .put(this.API_URL + url, body)
+      .pipe(
+        catchError(error => {
+          this.handleError(error);
+          return throwError(error);
+        }),
+      );
+  }
+
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
       this.toastrService.show(
