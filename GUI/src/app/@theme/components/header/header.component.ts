@@ -48,6 +48,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .subscribe((token: NbAuthJWTToken) => {
         if (token.isValid()) {
           this.user = token.getPayload();
+          this.userMenu[0].link = '/pages/users/' + this.user.ID;
         }
       });
   }

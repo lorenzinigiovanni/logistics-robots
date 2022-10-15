@@ -1,5 +1,6 @@
 import { RouterModule, Routes } from '@angular/router';
 import { NgModule } from '@angular/core';
+import { AdminGuard } from './../services/admin-guard.service';
 
 import { PagesComponent } from './pages.component';
 import { NotFoundComponent } from './miscellaneous/not-found/not-found.component';
@@ -20,8 +21,14 @@ const routes: Routes = [{
     },
     {
       path: 'settings',
+      canActivate: [AdminGuard],
       loadChildren: () => import('./settings/settings.module')
         .then(m => m.SettingsModule),
+    },
+    {
+      path: 'users',
+      loadChildren: () => import('./users/users.module')
+        .then(m => m.UsersModule),
     },
     {
       path: '',
