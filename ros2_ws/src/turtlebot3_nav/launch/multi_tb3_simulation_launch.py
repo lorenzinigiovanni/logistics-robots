@@ -21,6 +21,7 @@ The robots co-exist on a shared environment and are controlled by independent na
 """
 
 import os
+import json
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -39,12 +40,12 @@ def generate_launch_description():
 
     pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
 
-    # Names and poses of the robots
-    robots = [
-        {'name': 'robot1', 'x_pose': 120.0, 'y_pose': 7.0, 'z_pose': 0.01,
-                           'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0},
-        {'name': 'robot2', 'x_pose': 120.0, 'y_pose': 8.0, 'z_pose': 0.01,
-                           'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0}]
+    robotsJson = json.load(open(os.path.join(bringup_dir, 'configuration', 'robots.json')))
+    
+    robots = []
+    for i, robot in enumerate(robotsJson['robots']):
+        robot['params_file'] = os.path.join(bringup_dir, 'params', f'nav2_multirobot_params_{i+1}.yaml')
+        robots.append(robot)
 
     # Simulation settings
     world = LaunchConfiguration('world')
@@ -74,16 +75,6 @@ def generate_launch_description():
         'map',
         default_value=os.path.join(bringup_dir, 'maps', 'povo.yaml'),
         description='Full path to map file to load')
-
-    declare_robot1_params_file_cmd = DeclareLaunchArgument(
-        'robot1_params_file',
-        default_value=os.path.join(bringup_dir, 'params', 'nav2_multirobot_params_1.yaml'),
-        description='Full path to the ROS2 parameters file to use for robot1 launched nodes')
-
-    declare_robot2_params_file_cmd = DeclareLaunchArgument(
-        'robot2_params_file',
-        default_value=os.path.join(bringup_dir, 'params', 'nav2_multirobot_params_2.yaml'),
-        description='Full path to the ROS2 parameters file to use for robot2 launched nodes')
 
     declare_autostart_cmd = DeclareLaunchArgument(
         'autostart', default_value='false',
@@ -121,7 +112,6 @@ def generate_launch_description():
     # Define commands for launching the navigation instances
     nav_instances_cmds = []
     for robot in robots:
-        params_file = LaunchConfiguration(f"{robot['name']}_params_file")
 
         group = GroupAction([
             IncludeLaunchDescription(
@@ -141,7 +131,7 @@ def generate_launch_description():
                                   'use_namespace': 'True',
                                   'map': map_yaml_file,
                                   'use_sim_time': 'True',
-                                  'params_file': params_file,
+                                  'params_file': robot['params_file'],
                                   'autostart': autostart,
                                   'use_rviz': 'False',
                                   'use_simulator': 'False',
@@ -163,7 +153,7 @@ def generate_launch_description():
                 msg=[robot['name'], ' map yaml: ', map_yaml_file]),
             LogInfo(
                 condition=IfCondition(log_settings),
-                msg=[robot['name'], ' params yaml: ', params_file]),
+                msg=[robot['name'], ' params yaml: ', robot['params_file']]),
             LogInfo(
                 condition=IfCondition(log_settings),
                 msg=[robot['name'], ' rviz config file: ', rviz_config_file]),
@@ -184,8 +174,6 @@ def generate_launch_description():
     ld.add_action(declare_simulator_cmd)
     ld.add_action(declare_world_cmd)
     ld.add_action(declare_map_yaml_cmd)
-    ld.add_action(declare_robot1_params_file_cmd)
-    ld.add_action(declare_robot2_params_file_cmd)
     ld.add_action(declare_use_rviz_cmd)
     ld.add_action(declare_autostart_cmd)
     ld.add_action(declare_rviz_config_file_cmd)

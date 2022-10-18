@@ -1,0 +1,22 @@
+{
+    "robots": [
+        {
+            "name": "robot1",
+            "x_pose": 120.0,
+            "y_pose": 7.0,
+            "z_pose": 0.01,
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0
+        },
+        {
+            "name": "robot2",
+            "x_pose": 120.0,
+            "y_pose": 8.0,
+            "z_pose": 0.01,
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0
+        }
+    ]
+}
