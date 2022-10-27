@@ -8,6 +8,7 @@ import { AuthController } from './controller/auth/AuthController';
 import { authenticateToken } from './middlewares/AuthenticateToken';
 import { UserController } from './controller/users/UserController';
 import { MapController } from './controller/map/MapController';
+import { SettingsController } from './controller/settings/SettingsController';
 
 export class Main {
     static start(): void {
@@ -48,6 +49,7 @@ export class Main {
             AuthController.route(app);
             UserController.route(app);
             MapController.route(app);
+            SettingsController.route(app);
 
             app.listen(3000);
             console.log('Express application is up and running on port 3000');

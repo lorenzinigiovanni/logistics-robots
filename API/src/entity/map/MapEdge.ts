@@ -1,9 +1,9 @@
 import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { CustonBaseEntity } from '../CustomBaseEntity';
+import { CustomBaseEntity } from '../CustomBaseEntity';
 import { MapNode } from './MapNode';
 
 @Entity()
-export class MapEdge extends CustonBaseEntity {
+export class MapEdge extends CustomBaseEntity {
 
     @PrimaryGeneratedColumn('uuid')
     ID!: string;

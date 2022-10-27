@@ -1,9 +1,9 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
-import { CustonBaseEntity } from '../CustomBaseEntity';
+import { CustomBaseEntity } from '../CustomBaseEntity';
 import { MapNode } from './MapNode';
 
 @Entity()
-export class Room extends CustonBaseEntity {
+export class Room extends CustomBaseEntity {
 
     @PrimaryGeneratedColumn('uuid')
     ID!: string;

@@ -2,18 +2,24 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { CustomBaseEntity } from '../CustomBaseEntity';
 
 @Entity()
-export class MapNode extends CustomBaseEntity {
+export class Settings extends CustomBaseEntity {
 
     @PrimaryGeneratedColumn('uuid')
     ID!: string;
 
     @Column()
-    value!: number;
+    algorithm!: string;
 
     @Column('float')
-    x!: number;
+    robotRadius!: number;
 
     @Column('float')
-    y!: number;
+    discretizationDistance!: number;
+
+    @Column('float')
+    doorSize!: number;
+
+    @Column('float')
+    meterPerPixel!: number;
 
 }

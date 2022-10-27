@@ -1,9 +1,9 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { CustonBaseEntity } from '../CustomBaseEntity';
+import { CustomBaseEntity } from '../CustomBaseEntity';
 import * as argon2 from 'argon2';
 
 @Entity()
-export class User extends CustonBaseEntity {
+export class User extends CustomBaseEntity {
 
     @PrimaryGeneratedColumn('uuid')
     ID!: string;

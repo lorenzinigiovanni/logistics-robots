@@ -7,6 +7,7 @@ import multer from 'multer';
 import { MapNode } from '../../entity/map/MapNode';
 import { MapEdge } from '../../entity/map/MapEdge';
 import { Room } from '../../entity/map/Room';
+import { Settings } from '../../entity/settings/Settings';
 
 const pythonDir = path.join(__dirname, '..', '..', '..', '..', 'scripts');
 const python = path.join(pythonDir, 'venv', 'Scripts', 'python.exe');
@@ -30,7 +31,23 @@ export class MapController {
 
                 await fs.writeFile(image_path, file.buffer);
 
-                const cmd = python + ' ' + pyScript + ' ' + image_path + ' ' + json_output_path;
+                const settings = await Settings.findOne();
+
+                if (settings == null) {
+                    res.status(500).send();
+                    return;
+                }
+
+                const parameters = [
+                    image_path,
+                    json_output_path,
+                    settings.meterPerPixel,
+                    settings.discretizationDistance,
+                    settings.doorSize,
+                    settings.robotRadius,
+                ];
+
+                const cmd = python + ' ' + pyScript + ' ' + parameters.join(' ');
                 await execShellCommand(cmd);
 
                 let rawdata = '';
