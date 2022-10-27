@@ -1,16 +1,30 @@
+import argparse
 import math
 import cv2
-from cv2 import norm
 import numpy as np
+import json
 from graph import Graph
 
-# user defined parameters
-meter_per_px = 0.0253929866989117 # m / px
-px_per_meter = 1.0 / meter_per_px # px / m
-discretization_distance = 1 # m
-doors_size = 1.3 # m
-robot_radius = 0.2 # m
-image_path = 'input.png'
+# define parser
+parser = argparse.ArgumentParser(description='Decompose map.')
+
+parser.add_argument('image_path', default='input.png', type=str, help="path of the map to be discretized")
+parser.add_argument('json_output_path', default='output.json', type=str, help="path where the json file (.json) containing information of the map will be saved")
+parser.add_argument('meter_per_px', default=0.0253929866989117, type=float, help="conversion rate between meters and pixels, depends on how the map's image is created [m/px]")
+parser.add_argument('discretization_distance', default=0.8, type=float, help="distance from two nodes in the graph [m]")
+parser.add_argument('doors_size', default=1.3, type=float, help="average width of the doors [m]")
+parser.add_argument('robot_radius', default=0.2,  type=float, help="radius of the robot [m]")
+
+args = parser.parse_args()
+
+image_path = args.image_path
+json_output_path = args.json_output_path
+meter_per_px = args.meter_per_px
+discretization_distance = args.discretization_distance
+doors_size = args.doors_size
+robot_radius = args.robot_radius
+
+px_per_meter = 1.0 / meter_per_px  # px / m
 
 
 def meter_2_pixel(p):
@@ -110,7 +124,7 @@ def main():
     doors_contours, _ = cv2.findContours(doors_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     doors = []
-    
+
     for door_contour in doors_contours:
         door_approx = cv2.approxPolyDP(door_contour, 0.01 * cv2.arcLength(door_contour, True), True)
         doors.append(door_approx)
@@ -136,7 +150,7 @@ def main():
 
     # create graph
     graph = Graph()
-    
+
     # add nodes to the graph
     # connect two nodes if a line connecting them does not intersect any wall
 
@@ -177,7 +191,7 @@ def main():
             if j < nodes.shape[1] - 1:
                 max_y = pixel[1] + round(discretization_distance * px_per_meter)
 
-            cropped_walls = walls[min_x : max_x, min_y : max_y]
+            cropped_walls = walls[min_x:max_x, min_y:max_y]
 
             for neighbour in neighbours:
                 # check if neighbour is a node
@@ -192,7 +206,7 @@ def main():
 
                     # p2 is the neighbour node
                     p2 = (neighbour_pixel[0] - pixel[0] + p1[0],
-                            neighbour_pixel[1] - pixel[1] + p1[1])
+                          neighbour_pixel[1] - pixel[1] + p1[1])
 
                     # draw a line between the two nodes
                     cv2.line(edges, reverse(p1), reverse(p2), 255, 1)
@@ -309,7 +323,34 @@ def main():
             cv2.line(img, reverse(p1), reverse(p2), (255, 0, 255), 1)
 
     # write image
-    cv2.imwrite('output.png', img)
+    # cv2.imwrite('output.png', img)
+
+    json_graph = []
+
+    for key, values in graph.vertices.items():
+        node = {
+            "x": key[0],
+            "y": key[1],
+        }
+
+        node["neighbours"] = []
+        for value in values:
+            node["neighbours"].append(
+                {
+                    "x": value[0],
+                    "y": value[1],
+                }
+            )
+
+        json_graph.append(node)
+
+    json_data = {
+        "graph": json_graph,
+        # "rooms": rooms,
+    }
+
+    with open(json_output_path, "w") as outfile:
+        json.dump(json_data, outfile, indent=4)
 
 
 if __name__ == "__main__":

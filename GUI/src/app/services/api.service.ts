@@ -107,6 +107,20 @@ export abstract class ApiService {
       );
   }
 
+  protected uploadFile(url: string, file: File): Observable<object> {
+    const formData: FormData = new FormData();
+    formData.append('file', file, file.name);
+
+    return this.http
+      .post(this.API_URL + url, formData)
+      .pipe(
+        catchError(error => {
+          this.handleError(error);
+          return throwError(error);
+        })
+      );
+  }
+
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
       this.toastrService.show(

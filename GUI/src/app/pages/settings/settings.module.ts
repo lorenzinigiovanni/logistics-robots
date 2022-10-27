@@ -4,6 +4,7 @@ import {
   NbSelectModule,
   NbButtonModule,
   NbInputModule,
+  NbSpinnerModule,
 } from '@nebular/theme';
 import { ThemeModule } from '../../@theme/theme.module';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -16,6 +17,7 @@ import { SettingsRoutingModule, routedComponents } from './settings-routing.modu
     NbSelectModule,
     NbButtonModule,
     NbInputModule,
+    NbSpinnerModule,
     ThemeModule,
     SettingsRoutingModule,
     ReactiveFormsModule,

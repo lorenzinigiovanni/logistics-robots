@@ -63,5 +63,16 @@
   </nb-card-header>
   <nb-card-body>
 
+    <div class="form-group row">
+      <label class="label col-sm-3 col-form-label">Map file [png, jpg, jpeg]</label>
+      <div class="col-sm-6">
+        <input nbInput class="form-control" type="file" accept=".png,.jpg,.jpeg" (change)="onChange($event)" fullWidth>
+      </div>
+      <div class="col-sm-3">
+        <button (click)="onUpload()" status="success" fullWidth nbButton [nbSpinner]="loading" nbSpinnerStatus="info">
+            Upload
+        </button>
+      </div>
+    </div>
   </nb-card-body>
 </nb-card>
