@@ -91,7 +91,7 @@ export class MapController {
                 nodes = await MapNode.find();
 
                 // add edges to db
-                const edges: any = [];
+                let edges: any = [];
                 for (const node_json of graph_json) {
                     const node1 = nodes.find((n: MapNode) => n.x === node_json.x && n.y === node_json.y);
 
@@ -130,6 +130,35 @@ export class MapController {
                     .into(Room)
                     .values(rooms)
                     .execute();
+
+                // generate adjacency list
+                edges = await MapEdge
+                    .createQueryBuilder('edge')
+                    .leftJoin('edge.node1', 'node1')
+                    .addSelect(['node1.ID', 'node1.value'])
+                    .leftJoin('edge.node2', 'node2')
+                    .addSelect(['node2.ID', 'node2.value'])
+                    .getMany();
+
+                const node_number = nodes.length;
+                const adjacency_list = Array.from(Array(node_number), _ => Array(node_number).fill(0));
+
+                for (i = 0; i < node_number; i++) {
+                    adjacency_list[i][i] = 1;
+
+                    const node = nodes.find((n: MapNode) => n.value === i + 1);
+                    const filteredEdges = edges.filter((e: MapEdge) => e.node1.ID === node.ID);
+
+                    for (const edge of filteredEdges) {
+                        const j = edge.node2.value - 1;
+
+                        adjacency_list[i][j] = 1;
+                        adjacency_list[j][i] = 1;
+                    }
+                }
+
+                // eslint-disable-next-line no-console
+                console.log(adjacency_list);
 
                 res.status(200).send();
             });
