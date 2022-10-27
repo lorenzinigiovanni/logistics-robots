@@ -62,6 +62,7 @@ export class MapController {
 
                 const map_json = JSON.parse(rawdata);
                 const graph_json = map_json.graph;
+                const rooms_json = map_json.rooms;
 
                 // delete all nodes, edges and rooms
                 await MapEdge.delete({});
@@ -92,10 +93,10 @@ export class MapController {
                 // add edges to db
                 const edges: any = [];
                 for (const node_json of graph_json) {
-                    const node1 = nodes.find((n: any) => n.x === node_json.x && n.y === node_json.y);
+                    const node1 = nodes.find((n: MapNode) => n.x === node_json.x && n.y === node_json.y);
 
                     for (const neighbour_json of node_json.neighbours) {
-                        const node2 = nodes.find((n: any) => n.x === neighbour_json.x && n.y === neighbour_json.y);
+                        const node2 = nodes.find((n: MapNode) => n.x === neighbour_json.x && n.y === neighbour_json.y);
 
                         edges.push({
                             node1: node1,
@@ -109,6 +110,25 @@ export class MapController {
                     .insert()
                     .into(MapEdge)
                     .values(edges)
+                    .execute();
+
+                // add rooms to db
+                const rooms: any = [];
+
+                for (const room_json of rooms_json) {
+                    const node = nodes.find((n: MapNode) => n.x === room_json.node.x && n.y === room_json.node.y);
+                    const polygon = JSON.stringify(room_json.polygon);
+                    rooms.push({
+                        node: node,
+                        polygon: polygon,
+                    });
+                }
+
+                await Room
+                    .createQueryBuilder()
+                    .insert()
+                    .into(Room)
+                    .values(rooms)
                     .execute();
 
                 res.status(200).send();

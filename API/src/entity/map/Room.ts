@@ -8,11 +8,11 @@ export class Room extends CustomBaseEntity {
     @PrimaryGeneratedColumn('uuid')
     ID!: string;
 
-    @Column()
-    name!: string;
-
     @Column({nullable: true})
-    polygon?: string;
+    name?: string;
+
+    @Column()
+    polygon!: string;
 
     @OneToOne(() => MapNode)
     @JoinColumn()

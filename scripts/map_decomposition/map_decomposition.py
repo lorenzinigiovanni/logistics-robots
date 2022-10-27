@@ -8,12 +8,12 @@ from graph import Graph
 # define parser
 parser = argparse.ArgumentParser(description='Decompose map.')
 
-parser.add_argument('image_path', default='input.png', type=str, help="path of the map to be discretized")
-parser.add_argument('json_output_path', default='output.json', type=str, help="path where the json file (.json) containing information of the map will be saved")
-parser.add_argument('meter_per_px', default=0.0253929866989117, type=float, help="conversion rate between meters and pixels, depends on how the map's image is created [m/px]")
-parser.add_argument('discretization_distance', default=0.8, type=float, help="distance from two nodes in the graph [m]")
-parser.add_argument('doors_size', default=1.3, type=float, help="average width of the doors [m]")
-parser.add_argument('robot_radius', default=0.2,  type=float, help="radius of the robot [m]")
+parser.add_argument('image_path', nargs='?', default='input.png', type=str, help="path of the map to be discretized")
+parser.add_argument('json_output_path', nargs='?', default='output.json', type=str, help="path where the json file (.json) containing information of the map will be saved")
+parser.add_argument('meter_per_px', nargs='?', default=0.0253929866989117, type=float, help="conversion rate between meters and pixels, depends on how the map's image is created [m/px]")
+parser.add_argument('discretization_distance', nargs='?', default=0.8, type=float, help="distance from two nodes in the graph [m]")
+parser.add_argument('doors_size', nargs='?', default=1.3, type=float, help="average width of the doors [m]")
+parser.add_argument('robot_radius', nargs='?', default=0.2,  type=float, help="radius of the robot [m]")
 
 args = parser.parse_args()
 
@@ -226,6 +226,7 @@ def main():
 
     # for each door find the nearest room, find the nearest graph vertex wrt door center, compute the normal to the door's long side
     # add a vertex in the direction of the center of the room starting from the door at a distance of discretization_distance
+    rooms_dict = {}
     for door in doors:
         door = door[:, 0]
         door = [pixel_2_meter(reverse(p)) for p in door]
@@ -234,6 +235,7 @@ def main():
 
         # find nearest room with respect to door center
         nearest_room_center = (-1, -1)
+        nearest_room = []
         min_room_dist = math.inf
 
         for room in rooms:
@@ -251,6 +253,7 @@ def main():
 
             if dist < min_room_dist:
                 min_room_dist = dist
+                nearest_room = room
                 nearest_room_center = room_center
 
         # find the nearest graph node with respect to the door center
@@ -311,6 +314,8 @@ def main():
         else:
             print("ERROR")
 
+        rooms_dict[new_point] = nearest_room
+
     # print graph
     for key, values in graph.vertices.items():
         p1 = meter_2_pixel(key)
@@ -326,6 +331,7 @@ def main():
     # cv2.imwrite('output.png', img)
 
     json_graph = []
+    json_rooms = []
 
     for key, values in graph.vertices.items():
         node = {
@@ -344,9 +350,27 @@ def main():
 
         json_graph.append(node)
 
+    for key, values in rooms_dict.items():
+        room = {
+            "node": {
+                "x": key[0],
+                "y": key[1],
+            }
+        }
+
+        room["polygon"] = []
+        for value in values:
+            room["polygon"].append(
+                {
+                    "x": value[0],
+                    "y": value[1],
+                }
+            )
+        json_rooms.append(room)
+
     json_data = {
         "graph": json_graph,
-        # "rooms": rooms,
+        "rooms": json_rooms,
     }
 
     with open(json_output_path, "w") as outfile:
