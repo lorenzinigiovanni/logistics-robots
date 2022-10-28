@@ -13,7 +13,8 @@ parser.add_argument('json_output_path', nargs='?', default='output.json', type=s
 parser.add_argument('meter_per_px', nargs='?', default=0.0253929866989117, type=float, help="conversion rate between meters and pixels, depends on how the map's image is created [m/px]")
 parser.add_argument('discretization_distance', nargs='?', default=0.8, type=float, help="distance from two nodes in the graph [m]")
 parser.add_argument('doors_size', nargs='?', default=1.3, type=float, help="average width of the doors [m]")
-parser.add_argument('robot_radius', nargs='?', default=0.2,  type=float, help="radius of the robot [m]")
+parser.add_argument('robot_radius', nargs='?', default=0.2, type=float, help="radius of the robot [m]")
+parser.add_argument('debug', nargs='?', default=False, type=bool, help="debug mode")
 
 args = parser.parse_args()
 
@@ -23,6 +24,7 @@ meter_per_px = args.meter_per_px
 discretization_distance = args.discretization_distance
 doors_size = args.doors_size
 robot_radius = args.robot_radius
+debug = args.debug
 
 px_per_meter = 1.0 / meter_per_px  # px / m
 
@@ -112,11 +114,13 @@ def main():
 
         # room
         if len(approx) == 4:
-            cv2.drawContours(img, [contour], 0, (0, 255, 0), 2)
+            if (debug):
+                cv2.drawContours(img, [contour], 0, (0, 255, 0), 2)
             rooms.append(approx)
         # corridor
         else:
-            cv2.drawContours(img, [contour], 0, (0, 0, 255), 2)
+            if (debug):
+                cv2.drawContours(img, [contour], 0, (0, 0, 255), 2)
 
     # list of doors contours
     doors_img = cv2.subtract(closed, walls)
@@ -316,19 +320,21 @@ def main():
 
         rooms_dict[new_point] = nearest_room
 
-    # print graph
-    for key, values in graph.vertices.items():
-        p1 = meter_2_pixel(key)
-        # vertex
-        cv2.circle(img, reverse(p1), 1, (0, 0, 255), 3)
+    if (debug):
+        # print graph
+        for key, values in graph.vertices.items():
+            p1 = meter_2_pixel(key)
+            # vertex
+            cv2.circle(img, reverse(p1), 1, (0, 0, 255), 3)
 
-        for value in values:
-            p2 = meter_2_pixel(value)
-            # edge
-            cv2.line(img, reverse(p1), reverse(p2), (255, 0, 255), 1)
+            for value in values:
+                p2 = meter_2_pixel(value)
+                # edge
+                cv2.line(img, reverse(p1), reverse(p2), (255, 0, 255), 1)
 
-    # write image
-    # cv2.imwrite('output.png', img)
+        # write image
+        img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        cv2.imwrite('output.png', img)
 
     json_graph = []
     json_rooms = []
