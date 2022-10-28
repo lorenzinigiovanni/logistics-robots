@@ -1,0 +1,60 @@
+<nb-card accent="primary">
+  <nb-card-header>
+    <div class="row">
+      <div class="col-6">Robots</div>
+      <div class="col-6 text-right">
+        <button nbButton status="primary" [routerLink]="['new']">
+          <nb-icon icon="plus-circle-outline"></nb-icon>
+        </button>
+      </div>
+    </div>
+  </nb-card-header>
+  <nb-card-body>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Number</th>
+          <th class="text-center">Name</th>
+          <th class="text-center">X-Coordinate [m]</th>
+          <th class="text-center">Y-Coordinate [m]</th>
+          <th class="text-center">&Theta;-Coordinate [rad]</th>
+          <th class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let robot of robots | async">
+          <td class="align-middle">{{robot.number}}</td>
+          <td class="align-middle text-center">{{robot.name}}</td>
+          <td class="align-middle text-center">{{robot.x}}</td>
+          <td class="align-middle text-center">{{robot.y}}</td>
+          <td class="align-middle text-center">{{robot.theta}}</td>
+          <td class="align-middle text-center">
+            <button nbButton ghost status="primary" [routerLink]="[robot.ID]">
+              <nb-icon icon="edit-2-outline"></nb-icon>
+            </button>
+            <button nbButton ghost status="danger" (click)="onDelete(robot.ID)">
+              <nb-icon icon="trash-2-outline"></nb-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </nb-card-body>
+</nb-card>
+
+<ng-template #dialogDeleteRobot let-data let-ref="dialogRef">
+  <nb-card>
+    <nb-card-header>Delete Robot</nb-card-header>
+    <nb-card-body>{{ data }}</nb-card-body>
+    <nb-card-footer>
+      <div class="row">
+        <div class="col-6">
+          <button nbButton status="primary" (click)="ref.close(false)" fullWidth>No</button>
+        </div>
+        <div class="col-6 text-right">
+          <button nbButton status="danger" (click)="ref.close(true)" fullWidth>Yes</button>
+        </div>
+      </div>
+    </nb-card-footer>
+  </nb-card>
+</ng-template>

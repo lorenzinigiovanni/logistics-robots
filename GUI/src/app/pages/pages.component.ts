@@ -19,35 +19,41 @@ export class PagesComponent {
   constructor(private authService: NbAuthService, private menuService: NbMenuService) {
     this.authService.onTokenChange()
       .subscribe((token: NbAuthJWTToken) => {
-          const admin = token.isValid() && token.getPayload()['admin'];
+        const admin = token.isValid() && token.getPayload()['admin'];
 
-          this.menuService.addItems([
-            {
-              title: 'Dashboard',
-              icon: 'bar-chart-outline',
-              link: '/pages/dashboard',
-              home: true,
-            },
-            {
-              title: 'Tasks',
-              icon: 'list-outline',
-              link: '/pages/tasks',
-            },
-            {
-              title: 'Settings',
-              icon: 'settings-2-outline',
-              link: '/pages/settings',
-              hidden: !admin,
-            },
-            {
-              title: 'Users',
-              icon: 'people-outline',
-              link: '/pages/users',
-              hidden: !admin,
-            },
-          ], 'menu');
-          
-        });
+        this.menuService.addItems([
+          {
+            title: 'Dashboard',
+            icon: 'bar-chart-outline',
+            link: '/pages/dashboard',
+            home: true,
+          },
+          {
+            title: 'Tasks',
+            icon: 'list-outline',
+            link: '/pages/tasks',
+          },
+          {
+            title: 'Robots',
+            icon: 'car-outline',
+            link: '/pages/robots',
+            hidden: !admin,
+          },
+          {
+            title: 'Settings',
+            icon: 'settings-2-outline',
+            link: '/pages/settings',
+            hidden: !admin,
+          },
+          {
+            title: 'Users',
+            icon: 'people-outline',
+            link: '/pages/users',
+            hidden: !admin,
+          },
+        ], 'menu');
+
+      });
   }
 
 }

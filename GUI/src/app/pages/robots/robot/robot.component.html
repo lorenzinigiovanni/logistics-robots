@@ -1,0 +1,58 @@
+<nb-card accent="primary">
+  <nb-card-header>
+    <div class="row">
+      <div class="col-1">
+        <button nbButton status="primary" [routerLink]="['/', 'pages', 'robots']">
+          <nb-icon icon="arrow-ios-back-outline"></nb-icon>
+        </button>
+      </div>
+      <div *ngIf="new" class="col-10 text-center">New robot</div>
+      <div *ngIf="!new" class="col-10 text-center">Modify robot</div>
+      <div class="col-1 text-right"></div>
+    </div>
+  </nb-card-header>
+  <nb-card-body>
+    <form [formGroup]="robotForm" (ngSubmit)="onSubmit(robotForm.value)">
+      <div class="row">
+        <div class="form-group col-6">
+          <label class="label">Number</label>
+          <input name="inputNumber" [formControl]="robotForm.controls['number']" nbInput type="number" placeholder="0"
+            min="1" max="100" step="1" fullWidth [status]="(robotForm.controls.number.invalid) ? 'danger' : 'basic'" />
+        </div>
+
+        <div class="form-group col-6">
+          <label class="label">Name</label>
+          <input name="inputName" [formControl]="robotForm.controls['name']" nbInput type="string" placeholder="Pluto"
+            fullWidth [status]="(robotForm.controls.name.invalid) ? 'danger' : 'basic'" />
+        </div>
+
+        <div class="form-group col-4">
+          <label class="label">X-Coordinate [m]</label>
+          <input name="inputX" [formControl]="robotForm.controls['x']" nbInput type="number" placeholder="0" min="0"
+            max="1000" step="0.1" fullWidth [status]="(robotForm.controls.x.invalid) ? 'danger' : 'basic'" />
+        </div>
+
+        <div class="form-group col-4">
+          <label class="label">Y-Coordinate [m]</label>
+          <input name="inputY" [formControl]="robotForm.controls['y']" nbInput type="number" placeholder="0" min="0"
+            max="1000" step="0.1" fullWidth [status]="(robotForm.controls.y.invalid) ? 'danger' : 'basic'" />
+        </div>
+
+        <div class="form-group col-4">
+          <label class="label">&Theta;-Coordinate [rad]</label>
+          <input name="inputTheta" [formControl]="robotForm.controls['theta']" nbInput type="number" placeholder="0"
+            min="0" max="6.28" step="0.1" fullWidth
+            [status]="(robotForm.controls.theta.invalid) ? 'danger' : 'basic'" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <button type="submit" nbButton fullWidth status="primary" [disabled]="!robotForm.valid">
+          <div *ngIf="new">New robot</div>
+          <div *ngIf="!new">Modify robot</div>
+        </button>
+      </div>
+
+    </form>
+  </nb-card-body>
+</nb-card>
