@@ -26,6 +26,12 @@ const routes: Routes = [{
         .then(m => m.SettingsModule),
     },
     {
+      path: 'robots',
+      canActivate: [AdminGuard],
+      loadChildren: () => import('./robots/robots.module')
+        .then(m => m.RobotsModule),
+    },
+    {
       path: 'users',
       loadChildren: () => import('./users/users.module')
         .then(m => m.UsersModule),
