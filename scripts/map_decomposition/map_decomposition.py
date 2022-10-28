@@ -81,6 +81,7 @@ def main():
     # reading image
     img = cv2.imread(image_path)
     img = cv2.bitwise_not(img)
+    img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
 
     # converting image into grayscale image
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
