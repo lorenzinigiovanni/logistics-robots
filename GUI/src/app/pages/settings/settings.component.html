@@ -8,15 +8,28 @@
 
       <div class="row">
         <div class="form-group col-12">
-          <label class="label">Algorithm type</label>
-          <nb-select fullWidth name="inputAlgorithm" formControlName="algorithm"
-            [status]="(settingsForm.controls.algorithm.invalid) ? 'danger' : 'basic'">
-            <!-- <nb-option *ngFor="let algorithm of algorithms" [value]="algorithm.ID">
-              {{algorithm.name}}
-            </nb-option> -->
+          <label class="label">MAPF Algorithm type</label>
+          <nb-select fullWidth name="inputMAPFAlgorithm" formControlName="MAPFalgorithm"
+            [status]="(settingsForm.controls.MAPFalgorithm.invalid) ? 'danger' : 'basic'">
+            <nb-option value="CP">CP</nb-option>
             <nb-option value="ICTS">ICTS</nb-option>
             <nb-option value="CBS">CBS</nb-option>
             <nb-option value="A* + OD + ID">A* + OD + ID</nb-option>
+          </nb-select>
+        </div>
+        <div class="form-group col-12">
+          <label class="label">SAPF Algorithm type</label>
+          <nb-select fullWidth name="inputSAPFAlgorithm" formControlName="SAPFalgorithm"
+            [status]="(settingsForm.controls.SAPFalgorithm.invalid) ? 'danger' : 'basic'">
+            <nb-option value="TDSP">TDSP</nb-option>
+          </nb-select>
+        </div>
+        <div class="form-group col-12">
+          <label class="label">Cost function</label>
+          <nb-select fullWidth name="inputCostFunction" formControlName="costFunction"
+            [status]="(settingsForm.controls.costFunction.invalid) ? 'danger' : 'basic'">
+            <nb-option value="MKS">MKS</nb-option>
+            <nb-option value="SIC">SIC</nb-option>
           </nb-select>
         </div>
       </div>

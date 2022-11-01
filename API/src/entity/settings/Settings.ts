@@ -8,7 +8,13 @@ export class Settings extends CustomBaseEntity {
     ID!: string;
 
     @Column()
-    algorithm!: string;
+    MAPFalgorithm!: string;
+
+    @Column()
+    SAPFalgorithm!: string;
+
+    @Column()
+    costFunction!: string;
 
     @Column('float')
     robotRadius!: number;
