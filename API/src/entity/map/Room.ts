@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { CustomBaseEntity } from '../CustomBaseEntity';
 import { MapNode } from './MapNode';
+import { TaskToRoom } from '../task/TaskToRoom';
 
 @Entity()
 export class Room extends CustomBaseEntity {
@@ -17,5 +18,8 @@ export class Room extends CustomBaseEntity {
     @OneToOne(() => MapNode)
     @JoinColumn()
     node!: MapNode
+
+    @OneToMany(() => TaskToRoom, taskToRooms => taskToRooms.room)
+    public taskToRooms!: TaskToRoom[];
 
 }

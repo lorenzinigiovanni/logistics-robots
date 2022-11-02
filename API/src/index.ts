@@ -10,6 +10,7 @@ import { UserController } from './controller/users/UserController';
 import { MapController } from './controller/map/MapController';
 import { SettingsController } from './controller/settings/SettingsController';
 import { RobotsController } from './controller/robots/RobotsController';
+import { TaskController } from './controller/task/TaskController';
 
 export class Main {
     static start(): void {
@@ -52,6 +53,7 @@ export class Main {
             MapController.route(app);
             SettingsController.route(app);
             RobotsController.route(app);
+            TaskController.route(app);
 
             app.listen(3000);
             console.log('Express application is up and running on port 3000');
