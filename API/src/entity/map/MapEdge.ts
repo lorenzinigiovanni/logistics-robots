@@ -8,11 +8,11 @@ export class MapEdge extends CustomBaseEntity {
     @PrimaryGeneratedColumn('uuid')
     ID!: string;
 
-    @ManyToOne(() => MapNode)
+    @ManyToOne(() => MapNode, { onDelete: 'CASCADE' })
     @JoinColumn()
     node1!: MapNode
 
-    @ManyToOne(() => MapNode)
+    @ManyToOne(() => MapNode, { onDelete: 'CASCADE' })
     @JoinColumn()
     node2!: MapNode
 

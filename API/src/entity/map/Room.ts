@@ -9,17 +9,17 @@ export class Room extends CustomBaseEntity {
     @PrimaryGeneratedColumn('uuid')
     ID!: string;
 
-    @Column({nullable: true})
+    @Column({ nullable: true })
     name?: string;
 
     @Column()
     polygon!: string;
 
-    @OneToOne(() => MapNode)
+    @OneToOne(() => MapNode, { onDelete: 'CASCADE' })
     @JoinColumn()
     node!: MapNode
 
-    @OneToMany(() => TaskToRoom, taskToRooms => taskToRooms.room)
+    @OneToMany(() => TaskToRoom, taskToRooms => taskToRooms.room, { onDelete: 'CASCADE' })
     public taskToRooms!: TaskToRoom[];
 
 }

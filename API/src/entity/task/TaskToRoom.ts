@@ -10,9 +10,9 @@ export class TaskToRoom {
     @Column()
     public order!: number
 
-    @ManyToOne(() => Task, (task) => task.taskToRooms)
+    @ManyToOne(() => Task, (task) => task.taskToRooms, { onDelete: 'CASCADE' })
     public task!: Task
 
-    @ManyToOne(() => Room, (room) => room.taskToRooms)
+    @ManyToOne(() => Room, (room) => room.taskToRooms, { onDelete: 'CASCADE' })
     public room!: Room
 }

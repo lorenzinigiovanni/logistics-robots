@@ -8,6 +8,7 @@ import { MapNode } from '../../entity/map/MapNode';
 import { MapEdge } from '../../entity/map/MapEdge';
 import { Room } from '../../entity/map/Room';
 import { Settings } from '../../entity/settings/Settings';
+import { Task } from '../../entity/task/Task';
 
 const pythonDir = path.join(__dirname, '..', '..', '..', '..', 'scripts');
 const python = path.join(pythonDir, 'venv', 'Scripts', 'python.exe');
@@ -65,9 +66,8 @@ export class MapController {
                 const rooms_json = map_json.rooms;
 
                 // delete all nodes, edges and rooms
-                await MapEdge.delete({});
-                await Room.delete({});
                 await MapNode.delete({});
+                await Task.delete({});
 
                 // add nodes to db
                 let nodes: any = [];
