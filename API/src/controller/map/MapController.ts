@@ -8,6 +8,7 @@ import { MapEdge } from '../../entity/map/MapEdge';
 import { Room } from '../../entity/map/Room';
 import { Settings } from '../../entity/settings/Settings';
 import { Task } from '../../entity/task/Task';
+import { generateName } from '../../tools/name-generator';
 import { execShellCommand } from '../../tools/shell';
 
 const pythonDir = path.join(__dirname, '..', '..', '..', '..', 'scripts');
@@ -123,6 +124,7 @@ export class MapController {
                     const room = Room.create({
                         node: node,
                         polygon: polygon,
+                        name: generateName(),
                     });
                     rooms.push(room);
                 }
