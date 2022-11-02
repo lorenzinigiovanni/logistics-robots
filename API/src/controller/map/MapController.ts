@@ -2,10 +2,13 @@ import express from 'express';
 import path from 'path';
 import fs from 'fs/promises';
 import multer from 'multer';
+import { png2svg } from 'svg-png-converter';
+import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 
 import { MapNode } from '../../entity/map/MapNode';
 import { MapEdge } from '../../entity/map/MapEdge';
 import { Room } from '../../entity/map/Room';
+import { Map } from '../../entity/map/Map';
 import { Settings } from '../../entity/settings/Settings';
 import { Task } from '../../entity/task/Task';
 import { generateName } from '../../tools/name-generator';
@@ -32,6 +35,17 @@ export class MapController {
                 const json_output_path = path.join(pythonDir, 'map_decomposition', 'output.json');
 
                 await fs.writeFile(image_path, file.buffer);
+
+                const result = await png2svg({
+                    optimize: true,
+                    input: file.buffer,
+                    color: 'white',
+                });
+
+                await Map.delete({});
+                const map = new Map();
+                map.svg = result.content;
+                await map.save();
 
                 const settings = await Settings.findOne();
 
