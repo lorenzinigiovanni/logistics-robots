@@ -92,7 +92,7 @@ export class MapController {
                 nodes = await MapNode.find();
 
                 // add edges to db
-                const edges: MapEdge[] = [];
+                let edges: MapEdge[] = [];
                 for (const node_json of graph_json) {
                     const node1 = nodes.find((n: MapNode) => n.x === node_json.x && n.y === node_json.y);
 
@@ -150,13 +150,15 @@ export class MapController {
                     adjacency_list[i][i] = 1;
 
                     const node = nodes.find((n: MapNode) => n.value === i + 1);
-                    const filteredEdges = edges.filter((e: MapEdge) => e.node1.ID === node.ID);
+                    if (node) {
+                        const filteredEdges = edges.filter((e: MapEdge) => e.node1.ID === node.ID);
 
-                    for (const edge of filteredEdges) {
-                        const j = edge.node2.value - 1;
+                        for (const edge of filteredEdges) {
+                            const j = edge.node2.value - 1;
 
-                        adjacency_list[i][j] = 1;
-                        adjacency_list[j][i] = 1;
+                            adjacency_list[i][j] = 1;
+                            adjacency_list[j][i] = 1;
+                        }
                     }
                 }
 
