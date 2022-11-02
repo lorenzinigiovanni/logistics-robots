@@ -70,15 +70,16 @@ export class MapController {
                 await Task.delete({});
 
                 // add nodes to db
-                let nodes: any = [];
+                let nodes: MapNode[] = [];
                 let i = 0;
                 for (const node_json of graph_json) {
                     i += 1;
-                    nodes.push({
+                    const node = MapNode.create({
                         x: node_json.x,
                         y: node_json.y,
                         value: i,
                     });
+                    nodes.push(node);
                 }
 
                 await MapNode
@@ -91,17 +92,18 @@ export class MapController {
                 nodes = await MapNode.find();
 
                 // add edges to db
-                let edges: any = [];
+                const edges: MapEdge[] = [];
                 for (const node_json of graph_json) {
                     const node1 = nodes.find((n: MapNode) => n.x === node_json.x && n.y === node_json.y);
 
                     for (const neighbour_json of node_json.neighbours) {
                         const node2 = nodes.find((n: MapNode) => n.x === neighbour_json.x && n.y === neighbour_json.y);
 
-                        edges.push({
+                        const edge = MapEdge.create({
                             node1: node1,
                             node2: node2,
                         });
+                        edges.push(edge);
                     }
                 }
 
@@ -113,15 +115,16 @@ export class MapController {
                     .execute();
 
                 // add rooms to db
-                const rooms: any = [];
+                const rooms: Room[] = [];
 
                 for (const room_json of rooms_json) {
                     const node = nodes.find((n: MapNode) => n.x === room_json.node.x && n.y === room_json.node.y);
                     const polygon = JSON.stringify(room_json.polygon);
-                    rooms.push({
+                    const room = Room.create({
                         node: node,
                         polygon: polygon,
                     });
+                    rooms.push(room);
                 }
 
                 await Room
