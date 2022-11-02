@@ -96,6 +96,17 @@ export abstract class ApiService {
       );
   }
 
+  protected getString(url: string): Observable<string> {
+    return this.http
+      .get(this.API_URL + url, { responseType: 'text' })
+      .pipe(
+        catchError(error => {
+          this.handleError(error);
+          return throwError(error);
+        }),
+      );
+  }
+
   protected putRaw(url: string, body: object): Observable<object> {
     return this.http
       .put(this.API_URL + url, body)
