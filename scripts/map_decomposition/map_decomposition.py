@@ -359,6 +359,8 @@ def main():
 
         json_graph.append(node)
 
+    max_x, max_y = pixel_2_meter(gray.shape)
+
     for key, values in rooms_dict.items():
         room = {
             "node": {
@@ -372,7 +374,7 @@ def main():
             room["polygon"].append(
                 {
                     "x": value[0],
-                    "y": value[1],
+                    "y": max_y - value[1],
                 }
             )
         json_rooms.append(room)
