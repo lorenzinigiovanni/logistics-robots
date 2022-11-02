@@ -152,6 +152,93 @@ export class MapController {
 
                 res.status(200).send();
             });
+
+        app.route('/map/svg')
+            .get(async (req, res) => {
+                const map = await Map.findOne();
+
+                if (map == null) {
+                    res.status(500).send();
+                    return;
+                }
+
+                const rooms = await Room.find();
+
+                const settings = await Settings.findOne();
+
+                if (settings == null) {
+                    res.status(500).send();
+                    return;
+                }
+
+                const meterPerPixel = settings.meterPerPixel;
+
+                const parser = new XMLParser({
+                    ignoreAttributes: false,
+                    attributeNamePrefix: '@',
+                });
+
+                const builder = new XMLBuilder({
+                    ignoreAttributes: false,
+                    attributeNamePrefix: '@',
+                });
+
+                const mapSvg = parser.parse(map.svg);
+
+                const width = mapSvg.svg['@width'];
+                const height = mapSvg.svg['@height'];
+
+                delete mapSvg.svg['@width'];
+                delete mapSvg.svg['@height'];
+
+                mapSvg.svg['@viewBox'] = `0 0 ${width} ${height}`;
+
+                const polylines = [];
+
+                for (const room of rooms) {
+                    const polygon = JSON.parse(room.polygon);
+                    const newPolygon = [];
+                    for (const point of polygon) {
+                        newPolygon.push(point.x / meterPerPixel + ',' + point.y / meterPerPixel);
+                    }
+
+                    polylines.push({
+                        '@points': newPolygon.join(' '),
+                        '@stroke-width': 0,
+                        '@fill': '#3366ff',
+                        '@id': `${room.ID}`,
+                    });
+                }
+
+                mapSvg.svg.polyline = polylines;
+
+                const svg = builder.build(mapSvg);
+
+                res.status(200).send(svg);
+            });
+
+        app.route('/map/rooms')
+            .get(async (req, res) => {
+                const rooms = await Room.createQueryBuilder('room')
+                    .select(['room.ID', 'room.name'])
+                    .getMany();
+
+                res.status(200).send(rooms);
+            });
+
+        app.route('/map/rooms/:ID')
+            .put(async (req, res) => {
+                const room = await Room.findById(req.params.ID);
+
+                if (room == null) {
+                    res.status(404).send();
+                    return;
+                }
+
+                Room.update(room, req.body);
+
+                res.status(200).send();
+            });
     }
 
 }
