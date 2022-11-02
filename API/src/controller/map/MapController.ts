@@ -1,5 +1,4 @@
 import express from 'express';
-import { exec } from 'child_process';
 import path from 'path';
 import fs from 'fs/promises';
 import multer from 'multer';
@@ -9,6 +8,7 @@ import { MapEdge } from '../../entity/map/MapEdge';
 import { Room } from '../../entity/map/Room';
 import { Settings } from '../../entity/settings/Settings';
 import { Task } from '../../entity/task/Task';
+import { execShellCommand } from '../../tools/shell';
 
 const pythonDir = path.join(__dirname, '..', '..', '..', '..', 'scripts');
 const python = path.join(pythonDir, 'venv', 'Scripts', 'python.exe');
@@ -137,20 +137,5 @@ export class MapController {
                 res.status(200).send();
             });
     }
-}
 
-/**
- * Executes a shell command and return it as a Promise.
- * @param cmd {string}
- * @return {Promise<string>}
- */
-function execShellCommand(cmd: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-        exec(cmd, (error, stdout, stderr) => {
-            if (error) {
-                console.warn(error);
-            }
-            resolve(stdout ? stdout : stderr);
-        });
-    });
 }
