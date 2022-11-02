@@ -115,9 +115,11 @@ def main():
 
         # room
         if len(approx) == 4:
-            if (debug):
-                cv2.drawContours(img, [contour], 0, (0, 255, 0), 2)
-            rooms.append(approx)
+            cx, cy = compute_center(approx[:, 0])
+            if closed[round(cy), round(cx)] != 255:
+                if (debug):
+                    cv2.drawContours(img, [contour], 0, (0, 255, 0), 2)
+                rooms.append(approx)
         # corridor
         else:
             if (debug):
