@@ -20,6 +20,11 @@ const routes: Routes = [{
       .then(m => m.TasksModule),
     },
     {
+      path: 'map',
+      loadChildren: () => import('./map/map.module')
+        .then(m => m.MapModule),
+    },
+    {
       path: 'settings',
       canActivate: [AdminGuard],
       loadChildren: () => import('./settings/settings.module')
