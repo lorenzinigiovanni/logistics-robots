@@ -21,7 +21,7 @@
           <nb-icon icon="plus-circle-outline"></nb-icon>
           New
         </button>
-        <button nbButton status="success" (click)="onSend()" [disabled]="disabledSend">
+        <button nbButton status="success" (click)="onSend()" [disabled]="disabledSend || task.goals.length==0">
           <nb-icon icon="checkmark-circle-outline"></nb-icon>
           Send
         </button>
