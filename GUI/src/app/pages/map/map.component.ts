@@ -3,6 +3,7 @@ import { NbDialogService, NbToastrService, NbTooltipDirective } from '@nebular/t
 
 import { Room } from 'app/entities/map/room.entity';
 import { Task } from 'app/entities/tasks/task.entity';
+import { TasksService } from 'app/services/tasks/tasks.service';
 import { MapService } from '../../services/map/map.service';
 
 @Component({
@@ -30,6 +31,7 @@ export class MapComponent implements OnInit {
 
   constructor(
     private mapService: MapService,
+    private tasksService: TasksService,
     private dialogService: NbDialogService,
     private toastrService: NbToastrService,
   ) {
@@ -114,9 +116,17 @@ export class MapComponent implements OnInit {
 
     this.acquiring = false;
 
-    console.log(this.task);
+    this.tasksService.postTask(this.task).subscribe(() => {
+      this.toastrService.show(
+        `created successfully`,
+        `Task`,
+        {
+          status: 'success',
+        },
+      );
+    });
 
-    // this.task.goals = [];
+    this.task.goals = [];
   }
 
   onCancel(): void {

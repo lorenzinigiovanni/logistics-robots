@@ -18,8 +18,7 @@
       <tbody>
         <tr *ngFor="let task of tasks | async">
           <td class="align-middle">status</td>
-          <td *ngIf="task.robot==undefined; else elseBlock" class="align-middle text-center">None</td>
-          <td #elseBlock class="align-middle text-center">{{task.robot.name}}</td>
+          <td class="align-middle text-center">{{task.robot?.name ? task.robot.name : 'None'}}</td>
           <td class="align-middle text-center">init(x,y)</td>
           <td class="align-middle text-center">current(x,y)</td>
           <td class="align-middle text-center">

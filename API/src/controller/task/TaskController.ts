@@ -6,6 +6,8 @@ import { MapEdge } from '../../entity/map/MapEdge';
 import { Task } from '../../entity/task/Task';
 import { Robot } from '../../entity/robot/Robot';
 import { Settings } from '../../entity/settings/Settings';
+import { TaskToRoom } from '../../entity/task/TaskToRoom';
+import { Room } from '../../entity/map/Room';
 
 
 export class TaskController {
@@ -26,8 +28,18 @@ export class TaskController {
                 res.status(200).send(task);
             })
             .post(async (req, res) => {
-                // eslint-disable-next-line @typescript-eslint/ban-types
-                const task = Task.create(req.body as Object);
+                const task = new Task();
+                task.taskToRooms = [];
+
+                let order = 0;
+                for (const goal of req.body.goals) {
+                    const taskToRoom = new TaskToRoom();
+                    taskToRoom.room = await Room.findOneOrFail(goal.ID);
+                    taskToRoom.order = order;
+                    await taskToRoom.save();
+                    task.taskToRooms.push(taskToRoom);
+                    order++;
+                }
 
                 await task.save();
 
