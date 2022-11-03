@@ -43,6 +43,10 @@ svg>polyline:hover {
   fill: #ffaa00 !important;
 }
 
+svg>polyline.selected {
+  fill: #00d68f;
+}
+
 #tooltip {
   position: absolute;
 }

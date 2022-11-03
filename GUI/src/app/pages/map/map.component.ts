@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, Renderer2, TemplateRef, ViewChild } from '@angular/core';
 import { NbDialogService, NbToastrService, NbTooltipDirective } from '@nebular/theme';
 
 import { Room } from 'app/entities/map/room.entity';
@@ -34,6 +34,7 @@ export class MapComponent implements OnInit {
     private tasksService: TasksService,
     private dialogService: NbDialogService,
     private toastrService: NbToastrService,
+    private renderer: Renderer2,
   ) {
 
   }
@@ -49,6 +50,8 @@ export class MapComponent implements OnInit {
     if (this.acquiring) {
       if (e.target.id) {
         const room = this.rooms.find(r => r.ID === e.target.id);
+        const polyline = this.map.nativeElement.querySelector(`[id="${room.ID}"]`);
+        this.renderer.addClass(polyline, 'selected');
         this.task.goals.push(room);
       }
     }
@@ -110,12 +113,6 @@ export class MapComponent implements OnInit {
   }
 
   onSend(): void {
-    this.disabledNew = false;
-    this.disabledSend = true;
-    this.disabledCancel = true;
-
-    this.acquiring = false;
-
     this.tasksService.postTask(this.task).subscribe(() => {
       this.toastrService.show(
         `created successfully`,
@@ -126,7 +123,7 @@ export class MapComponent implements OnInit {
       );
     });
 
-    this.task.goals = [];
+    this.onCancel();
   }
 
   onCancel(): void {
@@ -135,6 +132,11 @@ export class MapComponent implements OnInit {
     this.disabledCancel = true;
 
     this.acquiring = false;
+
+    const polylines = this.map.nativeElement.querySelectorAll(`polyline`);
+    for (const polyline of polylines) {
+      this.renderer.removeClass(polyline, 'selected');
+    }
 
     this.task.goals = [];
   }
