@@ -8,6 +8,7 @@ import { MapNode } from '../../entity/map/MapNode';
 import { MapEdge } from '../../entity/map/MapEdge';
 import { Room } from '../../entity/map/Room';
 import { Settings } from '../../entity/settings/Settings';
+import { Task } from '../../entity/task/Task';
 
 const pythonDir = path.join(__dirname, '..', '..', '..', '..', 'scripts');
 const python = path.join(pythonDir, 'venv', 'Scripts', 'python.exe');
@@ -65,20 +66,20 @@ export class MapController {
                 const rooms_json = map_json.rooms;
 
                 // delete all nodes, edges and rooms
-                await MapEdge.delete({});
-                await Room.delete({});
                 await MapNode.delete({});
+                await Task.delete({});
 
                 // add nodes to db
-                let nodes: any = [];
+                let nodes: MapNode[] = [];
                 let i = 0;
                 for (const node_json of graph_json) {
                     i += 1;
-                    nodes.push({
+                    const node = MapNode.create({
                         x: node_json.x,
                         y: node_json.y,
                         value: i,
                     });
+                    nodes.push(node);
                 }
 
                 await MapNode
@@ -91,17 +92,18 @@ export class MapController {
                 nodes = await MapNode.find();
 
                 // add edges to db
-                let edges: any = [];
+                const edges: MapEdge[] = [];
                 for (const node_json of graph_json) {
                     const node1 = nodes.find((n: MapNode) => n.x === node_json.x && n.y === node_json.y);
 
                     for (const neighbour_json of node_json.neighbours) {
                         const node2 = nodes.find((n: MapNode) => n.x === neighbour_json.x && n.y === neighbour_json.y);
 
-                        edges.push({
+                        const edge = MapEdge.create({
                             node1: node1,
                             node2: node2,
                         });
+                        edges.push(edge);
                     }
                 }
 
@@ -113,15 +115,16 @@ export class MapController {
                     .execute();
 
                 // add rooms to db
-                const rooms: any = [];
+                const rooms: Room[] = [];
 
                 for (const room_json of rooms_json) {
                     const node = nodes.find((n: MapNode) => n.x === room_json.node.x && n.y === room_json.node.y);
                     const polygon = JSON.stringify(room_json.polygon);
-                    rooms.push({
+                    const room = Room.create({
                         node: node,
                         polygon: polygon,
                     });
+                    rooms.push(room);
                 }
 
                 await Room
@@ -131,40 +134,9 @@ export class MapController {
                     .values(rooms)
                     .execute();
 
-                // generate adjacency list
-                edges = await MapEdge
-                    .createQueryBuilder('edge')
-                    .leftJoin('edge.node1', 'node1')
-                    .addSelect(['node1.ID', 'node1.value'])
-                    .leftJoin('edge.node2', 'node2')
-                    .addSelect(['node2.ID', 'node2.value'])
-                    .getMany();
-
-                const node_number = nodes.length;
-                const adjacency_list = Array.from(Array(node_number), _ => Array(node_number).fill(0));
-
-                for (i = 0; i < node_number; i++) {
-                    adjacency_list[i][i] = 1;
-
-                    const node = nodes.find((n: MapNode) => n.value === i + 1);
-                    const filteredEdges = edges.filter((e: MapEdge) => e.node1.ID === node.ID);
-
-                    for (const edge of filteredEdges) {
-                        const j = edge.node2.value - 1;
-
-                        adjacency_list[i][j] = 1;
-                        adjacency_list[j][i] = 1;
-                    }
-                }
-
-                // eslint-disable-next-line no-console
-                console.log(adjacency_list);
-
                 res.status(200).send();
             });
-
     }
-
 }
 
 /**

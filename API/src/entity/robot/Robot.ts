@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { CustomBaseEntity } from '../CustomBaseEntity';
+import { Task } from '../task/Task';
 
 @Entity()
 export class Robot extends CustomBaseEntity {
@@ -22,4 +23,6 @@ export class Robot extends CustomBaseEntity {
     @Column('float')
     theta!: number;
 
+    @OneToMany(() => Task, task => task.robot)
+    tasks!: Task[]
 }

@@ -2,7 +2,11 @@ export class Settings {
 
     ID!: string;
 
-    algorithm!: string;
+    MAPFalgorithm!: string;
+
+    SAPFalgorithm!: string;
+
+    costFunction!: string;
 
     robotRadius!: number;
 

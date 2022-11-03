@@ -13,7 +13,15 @@ export class SettingsComponent implements OnInit {
 
   settingsForm = new FormGroup({
     // algorithm
-    algorithm: new FormControl(null,
+    MAPFalgorithm: new FormControl(null,
+      [
+        Validators.required,
+      ]),
+    SAPFalgorithm: new FormControl(null,
+      [
+        Validators.required,
+      ]),
+    costFunction: new FormControl(null,
       [
         Validators.required,
       ]),

@@ -3,10 +3,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import {
   NbButtonModule,
   NbCardModule,
-  NbCheckboxModule,
   NbIconModule,
   NbInputModule,
-  NbToggleModule,
 } from '@nebular/theme';
 import { ThemeModule } from '../../@theme/theme.module';
 

@@ -1,4 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+
+import { Task } from 'app/entities/tasks/task.entity';
+import { TasksService } from 'app/services/tasks/tasks.service';
 
 @Component({
   selector: 'lr-tasks',
@@ -7,15 +11,16 @@ import { Component, OnInit } from '@angular/core';
 })
 export class TasksComponent implements OnInit {
 
-  constructor(
+  tasks: Observable<Task[]>;
 
+  constructor(
+    private tasksService: TasksService,
   ) {
 
   }
 
   ngOnInit() {
-
+    this.tasks = this.tasksService.getTasks();
   }
-
 
 }
