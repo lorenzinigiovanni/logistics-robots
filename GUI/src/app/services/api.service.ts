@@ -18,7 +18,7 @@ export abstract class ApiService {
     return this.http
       .get(this.API_URL + url)
       .pipe(
-        map(res => plainToClass(t, res as Object[])),
+        map(res => plainToClass(t, res as Object[], { excludeExtraneousValues: true })),
         catchError(error => {
           this.handleError(error);
           return throwError(error);
@@ -30,7 +30,7 @@ export abstract class ApiService {
     return this.http
       .get(this.API_URL + url)
       .pipe(
-        map(res => plainToClass(t, res as Object)),
+        map(res => plainToClass(t, res as Object, { excludeExtraneousValues: true })),
         catchError(error => {
           this.handleError(error);
           return throwError(error);
@@ -42,7 +42,7 @@ export abstract class ApiService {
     return this.http
       .post(this.API_URL + url, object)
       .pipe(
-        map(res => plainToClass(t, res as Object)),
+        map(res => plainToClass(t, res as Object, { excludeExtraneousValues: true })),
         catchError(error => {
           this.handleError(error);
           return throwError(error);
@@ -54,7 +54,7 @@ export abstract class ApiService {
     return this.http
       .put(this.API_URL + url, object)
       .pipe(
-        map(res => plainToClass(t, res as Object)),
+        map(res => plainToClass(t, res as Object, { excludeExtraneousValues: true })),
         catchError(error => {
           this.handleError(error);
           return throwError(error);
@@ -66,7 +66,7 @@ export abstract class ApiService {
     return this.http
       .delete(this.API_URL + url)
       .pipe(
-        map(res => plainToClass(t, res as Object)),
+        map(res => plainToClass(t, res as Object, { excludeExtraneousValues: true })),
         catchError(error => {
           this.handleError(error);
           return throwError(error);
