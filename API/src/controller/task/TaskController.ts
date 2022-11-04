@@ -37,14 +37,12 @@ export class TaskController {
                 const task = new Task();
                 task.taskToRooms = [];
 
-                let order = 0;
-                for (const goal of req.body.goals) {
+                for (const [order, goal] of req.body.goals.entries()) {
                     const taskToRoom = new TaskToRoom();
                     taskToRoom.room = await Room.findOneOrFail(goal.ID);
                     taskToRoom.order = order;
                     await taskToRoom.save();
                     task.taskToRooms.push(taskToRoom);
-                    order++;
                 }
 
                 await task.save();
