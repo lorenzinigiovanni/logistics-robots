@@ -37,3 +37,20 @@ a:hover {
 a:active {
   text-decoration: none !important;
 }
+
+svg>polyline:hover {
+  cursor: pointer !important;
+  fill: #ffaa00 !important;
+}
+
+svg>polyline.selected {
+  fill: #00d68f;
+}
+
+#tooltip {
+  position: absolute;
+}
+
+nb-tooltip {
+  pointer-events: none;
+}

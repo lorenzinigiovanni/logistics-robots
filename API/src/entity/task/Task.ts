@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany, CreateDateColumn } from 'typeorm';
 import { CustomBaseEntity } from '../CustomBaseEntity';
+import { Room } from '../map/Room';
 import { Robot } from '../robot/Robot';
 import { TaskToRoom } from './TaskToRoom';
 
@@ -14,6 +15,10 @@ export class Task extends CustomBaseEntity {
     robot!: Robot
 
     @OneToMany(() => TaskToRoom, taskToRooms => taskToRooms.task, { onDelete: 'CASCADE' })
-    public taskToRooms!: TaskToRoom[];
+    public taskToRooms?: TaskToRoom[];
 
+    @CreateDateColumn()
+    public createdAt!: Date;
+
+    public goals?: Room[];
 }

@@ -1,14 +1,18 @@
 import express from 'express';
-import { exec } from 'child_process';
 import path from 'path';
 import fs from 'fs/promises';
 import multer from 'multer';
+import { png2svg } from 'svg-png-converter';
+import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 
 import { MapNode } from '../../entity/map/MapNode';
 import { MapEdge } from '../../entity/map/MapEdge';
 import { Room } from '../../entity/map/Room';
+import { Map } from '../../entity/map/Map';
 import { Settings } from '../../entity/settings/Settings';
 import { Task } from '../../entity/task/Task';
+import { generateName } from '../../tools/name-generator';
+import { execShellCommand } from '../../tools/shell';
 
 const pythonDir = path.join(__dirname, '..', '..', '..', '..', 'scripts');
 const python = path.join(pythonDir, 'venv', 'Scripts', 'python.exe');
@@ -31,6 +35,17 @@ export class MapController {
                 const json_output_path = path.join(pythonDir, 'map_decomposition', 'output.json');
 
                 await fs.writeFile(image_path, file.buffer);
+
+                const result = await png2svg({
+                    optimize: true,
+                    input: file.buffer,
+                    color: 'white',
+                });
+
+                await Map.delete({});
+                const map = new Map();
+                map.svg = result.content;
+                await map.save();
 
                 const settings = await Settings.findOne();
 
@@ -123,6 +138,7 @@ export class MapController {
                     const room = Room.create({
                         node: node,
                         polygon: polygon,
+                        name: generateName(),
                     });
                     rooms.push(room);
                 }
@@ -136,21 +152,93 @@ export class MapController {
 
                 res.status(200).send();
             });
-    }
-}
 
-/**
- * Executes a shell command and return it as a Promise.
- * @param cmd {string}
- * @return {Promise<string>}
- */
-function execShellCommand(cmd: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-        exec(cmd, (error, stdout, stderr) => {
-            if (error) {
-                console.warn(error);
-            }
-            resolve(stdout ? stdout : stderr);
-        });
-    });
+        app.route('/map/svg')
+            .get(async (req, res) => {
+                const map = await Map.findOne();
+
+                if (map == null) {
+                    res.status(500).send();
+                    return;
+                }
+
+                const rooms = await Room.find();
+
+                const settings = await Settings.findOne();
+
+                if (settings == null) {
+                    res.status(500).send();
+                    return;
+                }
+
+                const meterPerPixel = settings.meterPerPixel;
+
+                const parser = new XMLParser({
+                    ignoreAttributes: false,
+                    attributeNamePrefix: '@',
+                });
+
+                const builder = new XMLBuilder({
+                    ignoreAttributes: false,
+                    attributeNamePrefix: '@',
+                });
+
+                const mapSvg = parser.parse(map.svg);
+
+                const width = mapSvg.svg['@width'];
+                const height = mapSvg.svg['@height'];
+
+                delete mapSvg.svg['@width'];
+                delete mapSvg.svg['@height'];
+
+                mapSvg.svg['@viewBox'] = `0 0 ${width} ${height}`;
+
+                const polylines = [];
+
+                for (const room of rooms) {
+                    const polygon = JSON.parse(room.polygon);
+                    const newPolygon = [];
+                    for (const point of polygon) {
+                        newPolygon.push(point.x / meterPerPixel + ',' + point.y / meterPerPixel);
+                    }
+
+                    polylines.push({
+                        '@points': newPolygon.join(' '),
+                        '@stroke-width': 0,
+                        '@fill': '#3366ff',
+                        '@id': `${room.ID}`,
+                    });
+                }
+
+                mapSvg.svg.polyline = polylines;
+
+                const svg = builder.build(mapSvg);
+
+                res.status(200).send(svg);
+            });
+
+        app.route('/map/rooms')
+            .get(async (req, res) => {
+                const rooms = await Room.createQueryBuilder('room')
+                    .select(['room.ID', 'room.name'])
+                    .getMany();
+
+                res.status(200).send(rooms);
+            });
+
+        app.route('/map/rooms/:ID')
+            .put(async (req, res) => {
+                const room = await Room.findById(req.params.ID);
+
+                if (room == null) {
+                    res.status(404).send();
+                    return;
+                }
+
+                Room.update(room, req.body);
+
+                res.status(200).send();
+            });
+    }
+
 }

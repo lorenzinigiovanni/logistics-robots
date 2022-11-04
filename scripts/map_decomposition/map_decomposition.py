@@ -115,9 +115,11 @@ def main():
 
         # room
         if len(approx) == 4:
-            if (debug):
-                cv2.drawContours(img, [contour], 0, (0, 255, 0), 2)
-            rooms.append(approx)
+            cx, cy = compute_center(approx[:, 0])
+            if closed[round(cy), round(cx)] != 255:
+                if (debug):
+                    cv2.drawContours(img, [contour], 0, (0, 255, 0), 2)
+                rooms.append(approx)
         # corridor
         else:
             if (debug):
@@ -357,6 +359,8 @@ def main():
 
         json_graph.append(node)
 
+    max_x, max_y = pixel_2_meter(gray.shape)
+
     for key, values in rooms_dict.items():
         room = {
             "node": {
@@ -370,7 +374,7 @@ def main():
             room["polygon"].append(
                 {
                     "x": value[0],
-                    "y": value[1],
+                    "y": max_y - value[1],
                 }
             )
         json_rooms.append(room)

@@ -34,6 +34,11 @@ export class PagesComponent {
             link: '/pages/tasks',
           },
           {
+            title: 'Map',
+            icon: 'map-outline',
+            link: '/pages/map',
+          },
+          {
             title: 'Robots',
             icon: 'car-outline',
             link: '/pages/robots',

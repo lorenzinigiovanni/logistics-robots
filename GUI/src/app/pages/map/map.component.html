@@ -1,0 +1,77 @@
+<nb-card accent="primary">
+  <nb-card-header>
+    Map
+  </nb-card-header>
+  <nb-card-body>
+    <nb-alert outline="warning">Right click to change room name</nb-alert>
+    <div #map (click)="onClick($event)" (mousemove)="onMouseMove($event)" (mouseleave)="onMouseLeave()"
+      (contextmenu)="onRightClick($event)"></div>
+  </nb-card-body>
+</nb-card>
+
+<i #tooltip id="tooltip" [nbTooltip]="tooltipTitle" nbTooltipStatus="warning" nbTooltipPlacement="right"
+  nbTooltipAdjustment="horizontal" nbTooltipTrigger="noop"></i>
+
+<nb-card accent="primary">
+  <nb-card-header>
+    <div class="row">
+      <div class="col-6">Task</div>
+      <div class="col-6 text-right">
+        <button nbButton status="primary" (click)="onNew()" [disabled]="disabledNew">
+          <nb-icon icon="plus-circle-outline"></nb-icon>
+          New
+        </button>
+        <button nbButton status="success" (click)="onSend()" [disabled]="disabledSend || task.goals.length==0">
+          <nb-icon icon="checkmark-circle-outline"></nb-icon>
+          Send
+        </button>
+        <button nbButton status="danger" (click)="onCancel()" [disabled]="disabledCancel">
+          <nb-icon icon="close-circle-outline"></nb-icon>
+          Cancel
+        </button>
+      </div>
+    </div>
+  </nb-card-header>
+  <nb-card-body>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Sequence</th>
+          <th>Room name</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let goal of task.goals; let i = index">
+          <td class="align-middle">{{i + 1}}</td>
+          <td class="align-middle">{{goal.name}}</td>
+          <td class="align-middle text-right">
+            <button nbButton ghost status="danger" (click)="onDelete(i)">
+              <nb-icon icon="trash-2-outline"></nb-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </nb-card-body>
+</nb-card>
+
+<ng-template #dialogRoomName let-data let-ref="dialogRef">
+  <nb-card>
+    <nb-card-header>Room name</nb-card-header>
+    <nb-card-body>
+      <p>Enter the name</p>
+      <input nbInput type="string" placeholder="Name" #name fullWidth>
+    </nb-card-body>
+    <nb-card-footer>
+      <div class="row">
+        <div class="col-6">
+          <button nbButton status="primary" (click)="ref.close()" fullWidth>Cancel</button>
+        </div>
+        <div class="col-6 text-right">
+          <button nbButton status="success" (click)="ref.close(name.value)" fullWidth>Save</button>
+        </div>
+      </div>
+    </nb-card-footer>
+  </nb-card>
+</ng-template>
