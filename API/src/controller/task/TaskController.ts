@@ -16,16 +16,22 @@ export class TaskController {
 
         app.route('/tasks')
             .get(async (req, res) => {
-                // TODO: fix in order to get rooms as array, rooms not nested in taskToRooms
-                const task = await Task.createQueryBuilder('task')
+                const tasks = await Task.createQueryBuilder('task')
                     .leftJoinAndSelect('task.robot', 'robot')
                     .leftJoinAndSelect('task.taskToRooms', 'taskToRooms')
-                    .orderBy('taskToRooms.order')
                     .leftJoinAndSelect('taskToRooms.room', 'room')
                     .leftJoinAndSelect('room.node', 'node')
+                    .orderBy({ 'task.createdAt': 'DESC', 'taskToRooms.order': 'ASC' })
                     .getMany();
 
-                res.status(200).send(task);
+                for (const task of tasks) {
+                    if (task.taskToRooms) {
+                        task.goals = task.taskToRooms.map(taskToRoom => taskToRoom.room);
+                        delete task.taskToRooms;
+                    }
+                }
+
+                res.status(200).send(tasks);
             })
             .post(async (req, res) => {
                 const task = new Task();
@@ -46,7 +52,7 @@ export class TaskController {
                 res.status(200).send();
             });
 
-        app.route('/generate_plan')
+        app.route('/generate-plan')
             .get(async (req, res) => {
                 const settings = await Settings.findOne();
 
@@ -80,7 +86,7 @@ export class TaskController {
                 // generate nodes list
                 const node_number = nodes.length;
 
-                const node_list = Array.from(Array(node_number), _ => Array(4).fill(0));
+                const node_list = Array.from(Array(node_number), () => Array(4).fill(0));
                 for (let i = 0; i < node_number; i++) {
                     node_list[i] = [nodes[i].value, nodes[i].value, nodes[i].x, nodes[i].y];
                 }
@@ -90,8 +96,10 @@ export class TaskController {
                 for (const robot of robots) {
                     let agent_task: number[] = [];
                     for (const task of robot.tasks) {
-                        for (const taskToRoom of task.taskToRooms) {
-                            agent_task.push(taskToRoom.room.node.value);
+                        if (task.taskToRooms) {
+                            for (const taskToRoom of task.taskToRooms) {
+                                agent_task.push(taskToRoom.room.node.value);
+                            }
                         }
                     }
 
@@ -110,7 +118,7 @@ export class TaskController {
                 }
 
                 // generate adjacency list
-                const adjacency_list = Array.from(Array(node_number), _ => Array(node_number).fill(0));
+                const adjacency_list = Array.from(Array(node_number), () => Array(node_number).fill(0));
                 for (let i = 0; i < node_number; i++) {
                     adjacency_list[i][i] = 1;
 
@@ -142,7 +150,7 @@ export class TaskController {
                     'heuristic': '',
                 };
                 const json = JSON.stringify(json_list);
-                fs.writeFile('test.json', json, 'utf8');
+                await fs.writeFile('test.json', json, 'utf8');
 
                 res.status(200).send();
             });
