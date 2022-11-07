@@ -155,6 +155,9 @@ export class MapController {
                     .values(rooms)
                     .execute();
 
+                await fs.unlink(image_path);
+                await fs.unlink(json_output_path);
+
                 res.status(200).send();
             });
 
