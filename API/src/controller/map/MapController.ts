@@ -14,8 +14,7 @@ import { Task } from '../../entity/task/Task';
 import { generateName } from '../../tools/name-generator';
 import { execShellCommand } from '../../tools/shell';
 
-const pythonDir = path.join(__dirname, '..', '..', '..', '..', 'scripts');
-const python = path.join(pythonDir, 'venv', 'Scripts', 'python.exe');
+const pythonDir = path.join(__dirname, '..', '..', 'scripts');
 
 export class MapController {
 
@@ -63,8 +62,14 @@ export class MapController {
                     settings.robotRadius,
                 ];
 
-                const cmd = python + ' ' + pyScript + ' ' + parameters.join(' ');
-                await execShellCommand(cmd);
+                const cmd = 'conda run -n logistics-robots python ' + pyScript + ' ' + parameters.join(' ');
+                try {
+                    await execShellCommand(cmd);
+                } catch (err) {
+                    console.error(err);
+                    res.status(500).send();
+                    return;
+                }
 
                 let rawdata = '';
 
