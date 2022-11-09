@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "6080:80"
+      - "9090:9090"
     volumes:
       - type: bind
         source: ./../

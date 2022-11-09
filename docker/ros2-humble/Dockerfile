@@ -38,7 +38,8 @@ RUN apt-get update -q && \
     ros-${ROS_DISTRO}-cartographer \
     ros-${ROS_DISTRO}-cartographer-ros \
     ros-${ROS_DISTRO}-navigation2 \
-    ros-${ROS_DISTRO}-nav2-bringup && \
+    ros-${ROS_DISTRO}-nav2-bringup \
+    ros-${ROS_DISTRO}-rosbridge-server && \
     rm -rf /var/lib/apt/lists/*
 
 # Install turtlebot3 packages
