@@ -1,0 +1,7 @@
+name: logistics-robots
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - numpy
+  - opencv
