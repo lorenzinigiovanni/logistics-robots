@@ -8,7 +8,10 @@ import { Robot } from '../../entity/robot/Robot';
 import { Settings } from '../../entity/settings/Settings';
 import { TaskToRoom } from '../../entity/task/TaskToRoom';
 import { Room } from '../../entity/map/Room';
+import { execShellCommand } from '../../tools/shell';
+import path from 'path';
 
+const maofBuildDir = path.join(__dirname, '..', '..', 'maof', 'build');
 
 export class TaskController {
 
@@ -59,6 +62,7 @@ export class TaskController {
                     .leftJoinAndSelect('tasks.taskToRooms', 'taskToRooms')
                     .leftJoinAndSelect('taskToRooms.room', 'room')
                     .leftJoinAndSelect('room.node', 'node')
+                    .orderBy('robot.number', 'ASC')
                     .getMany();
 
                 const nodes = await MapNode.createQueryBuilder('node')
@@ -101,12 +105,28 @@ export class TaskController {
 
                     agentTask = agentTask.flat();
 
+                    const goalPositions: number[][] = [];
+                    for (const task of agentTask.flat()) {
+                        goalPositions.push([task]);
+                    }
+
+                    // search for the nearest node from the initial coordinates of the robot
+                    let robotNodeValue = -1;
+                    let minNodeDistance = Infinity;
+                    for (const node of nodes) {
+                        const dist = (node.x - robot.x) ** 2 + (node.y - robot.y) ** 2;
+                        if (dist < minNodeDistance) {
+                            minNodeDistance = dist;
+                            robotNodeValue = node.value;
+                        }
+                    }
+
                     if (agentTask.length > 0) {
                         agentList.push({
                             'ID': robot.number,
-                            'initPos': [2], // TODO: fix initial position
+                            'initPos': [robotNodeValue],
                             'endPos': [agentTask[agentTask.length - 1]],
-                            'goalPos': agentTask,
+                            'goalPos': goalPositions,
                             'priority': 0,
                             'name': robot.name,
                         });
@@ -145,10 +165,40 @@ export class TaskController {
                     'costFunction': settings.costFunction,
                     'heuristic': '',
                 };
-                await fs.writeFile('test.json', json, 'utf8');
                 const json = JSON.stringify(jsonList);
+                await fs.writeFile(path.join(maofBuildDir, 'input.json'), json, 'utf8');
 
                 res.status(200).send();
+            });
+
+
+        app.route('/compute-plan')
+            .get(async (req, res) => {
+
+                const settings = await Settings.findOne();
+
+                const cmd = 'cd ' + maofBuildDir + ' && ' + './MAOFexec' + ' ' + 'input.json' + ' ' + settings?.MAPFalgorithm + ' ' + settings?.costFunction + ' ' + settings?.SAPFalgorithm;
+                const outputFile = path.join(maofBuildDir, 'output.json');
+
+                try {
+                    await execShellCommand(cmd);
+                } catch (err) {
+                    console.error(err);
+                    res.status(500).send();
+                    return;
+                }
+
+                let rawdata = '';
+                try {
+                    rawdata = await fs.readFile(outputFile, 'utf8');
+                } catch (err) {
+                    console.error(err);
+                    res.status(500).send();
+                    return;
+                }
+                const outputJson = JSON.parse(rawdata);
+
+                res.status(200).send(outputJson);
             });
     }
 }
