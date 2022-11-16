@@ -30,10 +30,10 @@ export class MapController {
                 }
 
                 const pyScript = path.join(pythonDir, 'map_decomposition', 'map_decomposition.py');
-                const image_path = path.join(pythonDir, 'map_decomposition', file.originalname);
-                const json_output_path = path.join(pythonDir, 'map_decomposition', 'output.json');
+                const imagePath = path.join(pythonDir, 'map_decomposition', file.originalname);
+                const jsonOutputPath = path.join(pythonDir, 'map_decomposition', 'output.json');
 
-                await fs.writeFile(image_path, file.buffer);
+                await fs.writeFile(imagePath, file.buffer);
 
                 const result = await png2svg({
                     optimize: true,
@@ -54,8 +54,8 @@ export class MapController {
                 }
 
                 const parameters = [
-                    image_path,
-                    json_output_path,
+                    imagePath,
+                    jsonOutputPath,
                     settings.meterPerPixel,
                     settings.discretizationDistance,
                     settings.doorSize,
@@ -74,16 +74,16 @@ export class MapController {
                 let rawdata = '';
 
                 try {
-                    rawdata = await fs.readFile(json_output_path, 'utf8');
+                    rawdata = await fs.readFile(jsonOutputPath, 'utf8');
                 } catch (err) {
                     console.error(err);
                     res.status(500).send();
                     return;
                 }
 
-                const map_json = JSON.parse(rawdata);
-                const graph_json = map_json.graph;
-                const rooms_json = map_json.rooms;
+                const mapJson = JSON.parse(rawdata);
+                const graphJson = mapJson.graph;
+                const roomsJson = mapJson.rooms;
 
                 // delete all nodes, edges and rooms
                 await MapNode.delete({});
@@ -92,11 +92,11 @@ export class MapController {
                 // add nodes to db
                 let nodes: MapNode[] = [];
                 let i = 0;
-                for (const node_json of graph_json) {
+                for (const nodeJson of graphJson) {
                     i += 1;
                     const node = MapNode.create({
-                        x: node_json.x,
-                        y: node_json.y,
+                        x: nodeJson.x,
+                        y: nodeJson.y,
                         value: i,
                     });
                     nodes.push(node);
@@ -113,11 +113,11 @@ export class MapController {
 
                 // add edges to db
                 const edges: MapEdge[] = [];
-                for (const node_json of graph_json) {
-                    const node1 = nodes.find((n: MapNode) => n.x === node_json.x && n.y === node_json.y);
+                for (const nodeJson of graphJson) {
+                    const node1 = nodes.find((n: MapNode) => n.x === nodeJson.x && n.y === nodeJson.y);
 
-                    for (const neighbour_json of node_json.neighbours) {
-                        const node2 = nodes.find((n: MapNode) => n.x === neighbour_json.x && n.y === neighbour_json.y);
+                    for (const neighbourJson of nodeJson.neighbours) {
+                        const node2 = nodes.find((n: MapNode) => n.x === neighbourJson.x && n.y === neighbourJson.y);
 
                         const edge = MapEdge.create({
                             node1: node1,
@@ -137,9 +137,9 @@ export class MapController {
                 // add rooms to db
                 const rooms: Room[] = [];
 
-                for (const room_json of rooms_json) {
-                    const node = nodes.find((n: MapNode) => n.x === room_json.node.x && n.y === room_json.node.y);
-                    const polygon = JSON.stringify(room_json.polygon);
+                for (const roomJson of roomsJson) {
+                    const node = nodes.find((n: MapNode) => n.x === roomJson.node.x && n.y === roomJson.node.y);
+                    const polygon = JSON.stringify(roomJson.polygon);
                     const room = Room.create({
                         node: node,
                         polygon: polygon,
@@ -155,8 +155,8 @@ export class MapController {
                     .values(rooms)
                     .execute();
 
-                await fs.unlink(image_path);
-                await fs.unlink(json_output_path);
+                await fs.unlink(imagePath);
+                await fs.unlink(jsonOutputPath);
 
                 res.status(200).send();
             });

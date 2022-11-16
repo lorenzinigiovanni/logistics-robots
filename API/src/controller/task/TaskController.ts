@@ -78,37 +78,35 @@ export class TaskController {
                     return;
                 }
 
-                // generate agent number
-                const agent_num = robots.length;
-
                 // generate nodes list
-                const node_number = nodes.length;
+                const numberOfNodes = nodes.length;
 
-                const node_list = Array.from(Array(node_number), () => Array(4).fill(0));
-                for (let i = 0; i < node_number; i++) {
-                    node_list[i] = [nodes[i].value, nodes[i].value, nodes[i].x, nodes[i].y];
+                const nodeList = Array.from(Array(numberOfNodes), () => Array(4).fill(0));
+                for (let i = 0; i < numberOfNodes; i++) {
+                    // value (starts from 1), ID (starts from 0), x, y
+                    nodeList[i] = [nodes[i].value, nodes[i].value - 1, nodes[i].x, nodes[i].y];
                 }
 
                 // generate agents list
-                const agent_list = [];
+                const agentList = [];
                 for (const robot of robots) {
-                    let agent_task: number[] = [];
+                    let agentTask: number[] = [];
                     for (const task of robot.tasks) {
                         if (task.taskToRooms) {
                             for (const taskToRoom of task.taskToRooms) {
-                                agent_task.push(taskToRoom.room.node.value);
+                                agentTask.push(taskToRoom.room.node.value);
                             }
                         }
                     }
 
-                    agent_task = agent_task.flat();
+                    agentTask = agentTask.flat();
 
-                    if (agent_task.length > 0) {
-                        agent_list.push({
+                    if (agentTask.length > 0) {
+                        agentList.push({
                             'ID': robot.number,
                             'initPos': [2], // TODO: fix initial position
-                            'endPos': agent_task[agent_task.length - 1],
-                            'goalPos': agent_task,
+                            'endPos': [agentTask[agentTask.length - 1]],
+                            'goalPos': agentTask,
                             'priority': 0,
                             'name': robot.name,
                         });
@@ -116,9 +114,9 @@ export class TaskController {
                 }
 
                 // generate adjacency list
-                const adjacency_list = Array.from(Array(node_number), () => Array(node_number).fill(0));
-                for (let i = 0; i < node_number; i++) {
-                    adjacency_list[i][i] = 1;
+                const adjacencyList = Array.from(Array(numberOfNodes), () => Array(numberOfNodes).fill(0));
+                for (let i = 0; i < numberOfNodes; i++) {
+                    adjacencyList[i][i] = 1;
 
                     const node = nodes.find((n: MapNode) => n.value === i + 1);
 
@@ -132,23 +130,23 @@ export class TaskController {
                     for (const edge of filteredEdges) {
                         const j = edge.node2.value - 1;
 
-                        adjacency_list[i][j] = 1;
-                        adjacency_list[j][i] = 1;
+                        adjacencyList[i][j] = 1;
+                        adjacencyList[j][i] = 1;
                     }
                 }
 
-                const json_list = {
-                    'nAgents': agent_num,
-                    'nodes': node_list,
-                    'agents': agent_list,
-                    'connect': adjacency_list,
+                const jsonList = {
+                    'nAgents': robots.length,
+                    'nodes': nodeList,
+                    'agents': agentList,
+                    'connect': adjacencyList,
                     'MAPF': settings.MAPFalgorithm,
                     'SAPF': settings.SAPFalgorithm,
                     'costFunction': settings.costFunction,
                     'heuristic': '',
                 };
-                const json = JSON.stringify(json_list);
                 await fs.writeFile('test.json', json, 'utf8');
+                const json = JSON.stringify(jsonList);
 
                 res.status(200).send();
             });
