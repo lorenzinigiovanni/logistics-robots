@@ -1,0 +1,3 @@
+[submodule "API/src/maof"]
+	path = API/src/maof
+	url = https://bitbucket.org/lorenzinigiovanni/maof/src/master/
