@@ -1,6 +1,7 @@
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
+import * as ROS from 'ros2nodejs';
 
 import { MapNode } from '../../entity/map/MapNode';
 import { MapEdge } from '../../entity/map/MapEdge';
@@ -186,6 +187,81 @@ export class TaskController {
                     console.error(err);
                     res.status(500).send();
                     return;
+                }
+
+                res.status(200).send();
+            });
+
+        app.route('/go')
+            .get(async (req, res) => {
+                const tasks = await Task.createQueryBuilder('task')
+                    .leftJoinAndSelect('task.robot', 'robot')
+                    .leftJoinAndSelect('task.taskToRooms', 'taskToRooms')
+                    .leftJoinAndSelect('taskToRooms.room', 'room')
+                    .leftJoinAndSelect('room.node', 'node')
+                    .orderBy({ 'task.createdAt': 'DESC', 'taskToRooms.order': 'ASC' })
+                    .getMany();
+
+                for (const task of tasks) {
+                    if (task.taskToRooms) {
+                        task.goals = task.taskToRooms.map(taskToRoom => taskToRoom.room);
+                        delete task.taskToRooms;
+                    }
+                }
+
+                for (const task of tasks) {
+                    const date = Date.now();
+                    const poses: any[] = [];
+
+                    if (task.goals) {
+                        for (const goal of task.goals) {
+                            poses.push({
+                                header: {
+                                    stamp: {
+                                        sec: Math.floor(date / 1000),
+                                        nanosec: date - Math.floor(date / 1000) * 1000,
+                                    },
+                                    frame_id: 'map',
+                                },
+                                pose: {
+                                    position: {
+                                        x: goal.node.x,
+                                        y: goal.node.y,
+                                        z: 0,
+                                    },
+                                    // orientation: {
+                                    //     x: 0.0,
+                                    //     y: 0.0,
+                                    //     z: 0.0,
+                                    //     w: 1.0,
+                                    // },
+                                },
+                            });
+                        }
+                    }
+
+                    // eslint-disable-next-line no-console
+                    console.log('Robot' + task.robot.number + ': ' + JSON.stringify(poses));
+
+                    const followWaypointsActionClient = new ROS.Action(
+                        global.ros,
+                        `/robot${task.robot.number}/follow_waypoints`,
+                        'nav2_msgs/FollowWaypoints',
+                    );
+
+                    followWaypointsActionClient.sendGoal({
+                        poses: poses,
+                    }, (result: any) => {
+                        // eslint-disable-next-line no-console
+                        console.log('Result:', result);
+                    }, (error: any) => {
+                        // eslint-disable-next-line no-console
+                        console.log('Error:', error);
+                    }, (feedback: any) => {
+                        // eslint-disable-next-line no-console
+                        // console.log('Feedback:', feedback);
+                    });
+
                 }
 
                 res.status(200).send();

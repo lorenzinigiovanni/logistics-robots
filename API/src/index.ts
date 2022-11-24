@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { createConnection } from 'typeorm';
 import express from 'express';
 import cors from 'cors';
+import * as ROS from 'ros2nodejs';
 
 import { AuthController } from './controller/auth/AuthController';
 import { authenticateToken } from './middlewares/AuthenticateToken';
@@ -12,11 +13,29 @@ import { SettingsController } from './controller/settings/SettingsController';
 import { RobotsController } from './controller/robots/RobotsController';
 import { TaskController } from './controller/task/TaskController';
 
+declare global {
+    // eslint-disable-next-line no-var
+    var ros: any;
+}
+
 export class Main {
     static start(): void {
         dotenv.config();
 
         const rootDir = process.env.NODE_ENV === 'development' ? 'src' : 'build';
+
+        const ros = new ROS.Ros('ws://localhost:9090');
+        global.ros = ros;
+
+        ros.open();
+
+        ros.on('open', function () {
+            console.log('Connected to ROS');
+        });
+
+        ros.on('close', function () {
+            console.log('Connection to ROS closed');
+        });
 
         createConnection({
             type: 'postgres',
