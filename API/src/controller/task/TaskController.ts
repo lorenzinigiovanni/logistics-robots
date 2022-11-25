@@ -3,13 +3,13 @@ import fs from 'fs/promises';
 
 import { MapNode } from '../../entity/map/MapNode';
 import { MapEdge } from '../../entity/map/MapEdge';
-import { Task } from '../../entity/task/Task';
+import { Task, TaskStatus } from '../../entity/task/Task';
 import { Robot } from '../../entity/robot/Robot';
 import { Settings } from '../../entity/settings/Settings';
 import { TaskToRoom } from '../../entity/task/TaskToRoom';
 import { Room } from '../../entity/map/Room';
 import { execShellCommand } from '../../tools/shell';
-import path from 'path';
+import { manhattanDistanceFromNodes, euclideanDistanceFromNodes } from '../../tools/distance';
 
 const maofBuildDir = path.join(__dirname, '..', '..', 'maof', 'build');
 
@@ -57,13 +57,43 @@ export class TaskController {
             .get(async (req, res) => {
                 const settings = await Settings.findOne();
 
-                const robots = await Robot.createQueryBuilder('robot')
-                    .leftJoinAndSelect('robot.tasks', 'tasks')
-                    .leftJoinAndSelect('tasks.taskToRooms', 'taskToRooms')
+                if (settings == null) {
+                    res.status(500).send();
+                    return;
+                }
+
+                const tasks = await Task.createQueryBuilder('task')
+                    .leftJoinAndSelect('task.robot', 'robot')
+                    .where('task.status=:status', { status: TaskStatus.NOT_ASSIGNED })
+                    .leftJoinAndSelect('task.taskToRooms', 'taskToRooms')
                     .leftJoinAndSelect('taskToRooms.room', 'room')
                     .leftJoinAndSelect('room.node', 'node')
-                    .orderBy('robot.number', 'ASC')
+                    .orderBy({ 'task.createdAt': 'ASC', 'taskToRooms.order': 'ASC' })
                     .getMany();
+
+                for (const task of tasks) {
+                    if (task.taskToRooms) {
+                        task.goals = task.taskToRooms.map(taskToRoom => taskToRoom.room);
+                    }
+                }
+
+                let robots = await Robot.createQueryBuilder('robot')
+                    .leftJoinAndSelect('robot.tasks', 'task')
+                    .leftJoinAndSelect('task.taskToRooms', 'taskToRooms')
+                    .leftJoinAndSelect('taskToRooms.room', 'room')
+                    .leftJoinAndSelect('room.node', 'node')
+                    .orderBy({ 'robot.number': 'ASC', 'task.createdAt': 'ASC', 'taskToRooms.order': 'ASC' })
+                    .getMany();
+
+                for (const robot of robots) {
+                    robot.tasks = robot.tasks.filter(task => task.status === TaskStatus.IN_EXECUTION || task.status === TaskStatus.ASSIGNED);
+                    for (const task of robot.tasks) {
+                        if (task.taskToRooms) {
+                            task.goals = task.taskToRooms.map(taskToRoom => taskToRoom.room);
+                            task.completedGoals = task.taskToRooms.filter(taskToRoom => taskToRoom.completed).map(taskToRoom => taskToRoom.room);
+                        }
+                    }
+                }
 
                 const nodes = await MapNode.createQueryBuilder('node')
                     .orderBy('node.value', 'ASC')
@@ -77,9 +107,90 @@ export class TaskController {
                     .addSelect(['node2.ID', 'node2.value'])
                     .getMany();
 
-                if (settings == null || robots == null || nodes == null || edges == null) {
-                    res.status(404).send();
-                    return;
+                // assign free task to agent basing on manhattan distance from last task of agent
+
+                for (const task of tasks) {
+                    let minDistance = Infinity;
+                    let robotIndex = -1;
+                    let i = 0;
+
+                    for (const robot of robots) {
+                        let newTaskFirstNode = null;
+                        let lastTaskLastNode = null;
+                        const robotCurrentPosition = await robot.getPosition();
+
+                        if (task.goals) {
+                            // get the first node of the new task
+                            newTaskFirstNode = task.goals[0].node;
+                        }
+
+                        if (robot.tasks.length > 0) {
+                            // get the last node of the last task of the robot
+                            const lastTask = robot.tasks[robot.tasks.length - 1];
+                            if (lastTask.goals) {
+                                lastTaskLastNode = lastTask.goals[lastTask.goals.length - 1].node;
+                            }
+                        }
+
+                        // if a task is present compute the distance between the current position of the robot and the successive goals untill reaching the end,
+                        // finally add distance between last goal and first new goal
+                        // if there is no task the distance is the one between the robot and the first new goal
+                        if (newTaskFirstNode) {
+                            let distance = 0;
+
+                            if (lastTaskLastNode) {
+                                for (const [k, robotTask] of robot.tasks.entries()) {
+                                    if (robotTask.goals) {
+                                        if (robotTask.status === TaskStatus.IN_EXECUTION && robotTask.completedGoals?.length && robotTask.goals.length > robotTask.completedGoals?.length) {
+                                            for (let j = robotTask.completedGoals?.length; j < robotTask.goals.length; j++) {
+                                                if (j === robotTask.completedGoals?.length) {
+                                                    distance += manhattanDistanceFromNodes(robotCurrentPosition, robotTask.goals[j].node);
+                                                } else {
+                                                    distance += manhattanDistanceFromNodes(robotTask.goals[j - 1].node, robotTask.goals[j].node);
+                                                }
+                                            }
+                                        } else {
+                                            for (let j = 0; j < robotTask.goals.length; j++) {
+                                                if (j === 0 && k > 0) {
+                                                    const previousTask = robot.tasks[k - 1];
+                                                    if (previousTask.goals) {
+                                                        distance += manhattanDistanceFromNodes(previousTask.goals[previousTask.goals.length - 1].node, robotTask.goals[j].node);
+                                                    }
+                                                } else if (j > 0) {
+                                                    distance += manhattanDistanceFromNodes(robotTask.goals[j - 1].node, robotTask.goals[j].node);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                // add distance from last task last node to new task first node
+                                distance += manhattanDistanceFromNodes(lastTaskLastNode, newTaskFirstNode);
+                            } else {
+                                distance = manhattanDistanceFromNodes(robotCurrentPosition, newTaskFirstNode);
+                            }
+
+                            if (distance < minDistance) {
+                                minDistance = distance;
+                                robotIndex = i;
+                            }
+                        }
+
+                        i++;
+                    }
+
+                    if (minDistance !== Infinity) {
+                        task.status = TaskStatus.ASSIGNED;
+                        task.robot = robots[robotIndex];
+                        await task.save();
+
+                        robots = await Robot.createQueryBuilder('robot')
+                            .leftJoinAndSelect('robot.tasks', 'tasks')
+                            .leftJoinAndSelect('tasks.taskToRooms', 'taskToRooms')
+                            .leftJoinAndSelect('taskToRooms.room', 'room')
+                            .leftJoinAndSelect('room.node', 'node')
+                            .orderBy('robot.number', 'ASC')
+                            .getMany();
+                    }
                 }
 
                 // generate nodes list
@@ -96,9 +207,9 @@ export class TaskController {
                 for (const robot of robots) {
                     let agentTask: number[] = [];
                     for (const task of robot.tasks) {
-                        if (task.taskToRooms) {
-                            for (const taskToRoom of task.taskToRooms) {
-                                agentTask.push(taskToRoom.room.node.value);
+                        if (task.goals) {
+                            for (const goal of task.goals) {
+                                agentTask.push(goal.node.value);
                             }
                         }
                     }
@@ -114,7 +225,7 @@ export class TaskController {
                     let robotNodeValue = -1;
                     let minNodeDistance = Infinity;
                     for (const node of nodes) {
-                        const dist = (node.x - robot.x) ** 2 + (node.y - robot.y) ** 2;
+                        const dist = euclideanDistanceFromNodes(node, await robot.getPosition());
                         if (dist < minNodeDistance) {
                             minNodeDistance = dist;
                             robotNodeValue = node.value;
@@ -165,6 +276,7 @@ export class TaskController {
                     'costFunction': settings.costFunction,
                     'heuristic': '',
                 };
+
                 const json = JSON.stringify(jsonList);
                 await fs.writeFile(path.join(maofBuildDir, 'input.json'), json, 'utf8');
 
@@ -197,6 +309,9 @@ export class TaskController {
                     return;
                 }
                 const outputJson = JSON.parse(rawdata);
+
+                await fs.unlink(path.join(maofBuildDir, 'input.json'));
+                await fs.unlink(outputFile);
 
                 res.status(200).send(outputJson);
             });

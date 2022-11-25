@@ -142,6 +142,10 @@ export class MapComponent implements OnInit {
   }
 
   onDelete(i: number): void {
+    const room = this.rooms.find(r => r.ID === this.task.goals[i].ID);
+    const polyline = this.map.nativeElement.querySelector(`[id="${room.ID}"]`);
+    this.renderer.removeClass(polyline, 'selected');
+
     this.task.goals.splice(i, 1);
   }
 

@@ -31,7 +31,7 @@
     "nodemailer": "^6.6.3",
     "pg": "^8.7.1",
     "svg-png-converter": "^0.0.9",
-    "typeorm": "^0.2.36"
+    "typeorm": "^0.2.45"
   },
   "scripts": {
     "debug": "ts-node src/index.ts",
