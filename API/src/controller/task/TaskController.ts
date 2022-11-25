@@ -1,5 +1,6 @@
 import express from 'express';
 import fs from 'fs/promises';
+import path from 'path';
 
 import { MapNode } from '../../entity/map/MapNode';
 import { MapEdge } from '../../entity/map/MapEdge';
