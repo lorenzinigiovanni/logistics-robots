@@ -10,7 +10,7 @@ import { Settings } from '../../entity/settings/Settings';
 import { TaskToRoom } from '../../entity/task/TaskToRoom';
 import { Room } from '../../entity/map/Room';
 import { execShellCommand } from '../../tools/shell';
-import { manhattanDistanceFromNodes, euclideanDistanceFromNodes } from '../../tools/distance';
+import { manhattanDistanceFromNodes } from '../../tools/distance';
 
 const maofBuildDir = path.join(__dirname, '..', '..', 'maof', 'build');
 
@@ -74,7 +74,6 @@ export class TaskController {
 
                 // assign free task to agent basing on manhattan distance from last task of agent
 
-
                 let minDistance = Infinity;
                 let selectedRobot = null;
 
@@ -105,7 +104,7 @@ export class TaskController {
                         // add distance from current position to the end of the in execution + assigned tasks
                         for (const [k, robotTask] of robot.tasks.entries()) {
                             if (robotTask.goals) {
-                                if (robotTask.status === TaskStatus.IN_EXECUTION && robotTask.completedGoals?.length && robotTask.goals.length > robotTask.completedGoals?.length) {
+                                if (k === 0 && robotTask.completedGoals?.length != null && robotTask.goals.length > robotTask.completedGoals?.length) {
                                     for (let j = robotTask.completedGoals?.length; j < robotTask.goals.length; j++) {
                                         if (j === robotTask.completedGoals?.length) {
                                             distance += manhattanDistanceFromNodes(robotCurrentPosition, robotTask.goals[j].node);
@@ -115,7 +114,7 @@ export class TaskController {
                                     }
                                 } else {
                                     for (let j = 0; j < robotTask.goals.length; j++) {
-                                        if (j === 0 && k > 0) {
+                                        if (j === 0) {
                                             const previousTask = robot.tasks[k - 1];
                                             if (previousTask.goals) {
                                                 distance += manhattanDistanceFromNodes(previousTask.goals[previousTask.goals.length - 1].node, robotTask.goals[j].node);
@@ -185,7 +184,7 @@ export class TaskController {
                     robot.tasks = robot.tasks.filter(task => task.status === TaskStatus.IN_EXECUTION || task.status === TaskStatus.ASSIGNED);
                     for (const task of robot.tasks) {
                         if (task.taskToRooms) {
-                            task.goals =  task.taskToRooms.filter(taskToRoom => !taskToRoom.completed).map(taskToRoom => taskToRoom.room);
+                            task.goals = task.taskToRooms.filter(taskToRoom => !taskToRoom.completed).map(taskToRoom => taskToRoom.room);
                         }
                     }
                 }
@@ -216,21 +215,12 @@ export class TaskController {
                         goalPositions.push([task]);
                     }
 
-                    // search for the nearest node from the initial coordinates of the robot
-                    let robotNodeValue = -1;
-                    let minNodeDistance = Infinity;
-                    for (const node of nodes) {
-                        const dist = euclideanDistanceFromNodes(node, await robot.getPosition());
-                        if (dist < minNodeDistance) {
-                            minNodeDistance = dist;
-                            robotNodeValue = node.value;
-                        }
-                    }
+                    const robotNode = await robot.getPosition();
 
                     if (agentTask.length > 0) {
                         agentList.push({
                             'ID': robot.number,
-                            'initPos': [robotNodeValue],
+                            'initPos': [robotNode.value],
                             'endPos': [agentTask[agentTask.length - 1]],
                             'goalPos': goalPositions,
                             'priority': 0,
