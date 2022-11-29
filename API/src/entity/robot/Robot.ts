@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinColumn, OneToOne } from 'typeorm';
 import { euclideanDistance } from '../../tools/distance';
 import { CustomBaseEntity } from '../CustomBaseEntity';
 import { MapNode } from '../map/MapNode';
+import { Plan } from '../task/Plan';
 import { Task } from '../task/Task';
 
 @Entity()
@@ -27,6 +28,10 @@ export class Robot extends CustomBaseEntity {
 
     @OneToMany(() => Task, task => task.robot)
     tasks!: Task[]
+
+    @OneToOne(() => Plan, plan => plan.robot, {onDelete: 'SET NULL'})
+    @JoinColumn()
+    plan?: Plan;
 
     async getPosition(): Promise<MapNode> {
         const nodes = await MapNode.createQueryBuilder('node')

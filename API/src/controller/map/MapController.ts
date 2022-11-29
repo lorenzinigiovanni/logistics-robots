@@ -13,6 +13,7 @@ import { Settings } from '../../entity/settings/Settings';
 import { Task } from '../../entity/task/Task';
 import { generateName } from '../../tools/name-generator';
 import { execShellCommand } from '../../tools/shell';
+import { Plan } from '../../entity/task/Plan';
 
 const pythonDir = path.join(__dirname, '..', '..', 'scripts');
 
@@ -163,15 +164,6 @@ export class MapController {
 
         app.route('/map/svg')
             .get(async (req, res) => {
-                const map = await Map.findOne();
-
-                if (map == null) {
-                    res.status(500).send();
-                    return;
-                }
-
-                const rooms = await Room.find();
-
                 const settings = await Settings.findOne();
 
                 if (settings == null) {
@@ -181,12 +173,16 @@ export class MapController {
 
                 const meterPerPixel = settings.meterPerPixel;
 
-                const parser = new XMLParser({
-                    ignoreAttributes: false,
-                    attributeNamePrefix: '@',
-                });
+                // map
 
-                const builder = new XMLBuilder({
+                const map = await Map.findOne();
+
+                if (map == null) {
+                    res.status(500).send();
+                    return;
+                }
+
+                const parser = new XMLParser({
                     ignoreAttributes: false,
                     attributeNamePrefix: '@',
                 });
@@ -201,7 +197,11 @@ export class MapController {
 
                 mapSvg.svg['@viewBox'] = `0 0 ${width} ${height}`;
 
+                // rooms
+
                 const polylines = [];
+
+                const rooms = await Room.find();
 
                 for (const room of rooms) {
                     const polygon = JSON.parse(room.polygon);
@@ -218,7 +218,40 @@ export class MapController {
                     });
                 }
 
+                // plans
+
+                const plans = await Plan.createQueryBuilder('plan')
+                    .leftJoinAndSelect('plan.robot', 'robot')
+                    .leftJoinAndSelect('plan.planToNodes', 'planToNodes')
+                    .leftJoinAndSelect('planToNodes.node', 'node')
+                    .orderBy({ 'planToNodes.order': 'ASC' })
+                    .getMany();
+
+                for (const plan of plans) {
+                    if (plan.planToNodes) {
+                        plan.nodes = plan.planToNodes.map(planToNode => planToNode.node);
+                        delete plan.planToNodes;
+                    }
+                }
+
+                for (const plan of plans) {
+                    if (plan.nodes) {
+                        const points = plan.nodes.map(node => node.x / meterPerPixel + ',' + (height - node.y / meterPerPixel));
+                        polylines.push({
+                            '@points': points.join(' '),
+                            '@stroke-width': 8,
+                            '@stroke': stringToColour(plan.robot.name),
+                            '@fill': 'none',
+                        });
+                    }
+                }
+
                 mapSvg.svg.polyline = polylines;
+
+                const builder = new XMLBuilder({
+                    ignoreAttributes: false,
+                    attributeNamePrefix: '@',
+                });
 
                 const svg = builder.build(mapSvg);
 
@@ -249,4 +282,17 @@ export class MapController {
             });
     }
 
+}
+
+function stringToColour(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    let colour = '#';
+    for (let i = 0; i < 3; i++) {
+        const value = (hash >> (i * 8)) & 0xFF;
+        colour += ('00' + value.toString(16)).substr(-2);
+    }
+    return colour;
 }

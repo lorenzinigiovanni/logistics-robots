@@ -11,6 +11,9 @@ import { TaskToRoom } from '../../entity/task/TaskToRoom';
 import { Room } from '../../entity/map/Room';
 import { execShellCommand } from '../../tools/shell';
 import { manhattanDistanceFromNodes } from '../../tools/distance';
+import { Plan } from '../../entity/task/Plan';
+import { PlanToNode } from '../../entity/task/PlanToNode';
+import { createQueryBuilder } from 'typeorm';
 
 const maofBuildDir = path.join(__dirname, '..', '..', 'maof', 'build');
 
@@ -151,8 +154,25 @@ export class TaskController {
                 res.status(200).send();
             });
 
-        app.route('/compute-plan')
+        app.route('/plans')
             .get(async (req, res) => {
+                const plans = await Plan.createQueryBuilder('plan')
+                    .leftJoinAndSelect('plan.robot', 'robot')
+                    .leftJoinAndSelect('plan.planToNodes', 'planToNodes')
+                    .leftJoinAndSelect('planToNodes.node', 'node')
+                    .orderBy({ 'planToNodes.order': 'ASC' })
+                    .getMany();
+
+                for (const plan of plans) {
+                    if (plan.planToNodes) {
+                        plan.nodes = plan.planToNodes.map(planToNode => planToNode.node);
+                        delete plan.planToNodes;
+                    }
+                }
+
+                res.status(200).send(plans);
+            })
+            .post(async (req, res) => {
                 const settings = await Settings.findOne();
 
                 if (settings == null) {
@@ -209,24 +229,16 @@ export class TaskController {
                     }
 
                     agentTask = agentTask.flat();
-
-                    const goalPositions: number[][] = [];
-                    for (const task of agentTask.flat()) {
-                        goalPositions.push([task]);
-                    }
-
                     const robotNode = await robot.getPosition();
 
-                    if (agentTask.length > 0) {
-                        agentList.push({
-                            'ID': robot.number,
-                            'initPos': [robotNode.value],
-                            'endPos': [agentTask[agentTask.length - 1]],
-                            'goalPos': goalPositions,
-                            'priority': 0,
-                            'name': robot.name,
-                        });
-                    }
+                    agentList.push({
+                        'ID': robot.number,
+                        'initPos': [robotNode.value],
+                        'endPos': [agentTask.length > 0 ? agentTask[agentTask.length - 1] : robotNode.value],
+                        'goalPos': agentTask.slice(0, -1).map((value: number) => [value]),
+                        'priority': 0,
+                        'name': robot.name,
+                    });
                 }
 
                 // generate adjacency list
@@ -291,7 +303,37 @@ export class TaskController {
                 await fs.unlink(inputFilePath);
                 await fs.unlink(outputFilePath);
 
-                res.status(200).send(outputJson);
+                await Plan.delete({});
+
+                try {
+                    for (const robot of outputJson.agents) {
+                        const robotEntity = await Robot.findOneOrFail({ number: robot.ID });
+
+                        const plan = new Plan();
+                        await plan.save();
+                        robotEntity.plan = plan;
+
+                        for (const [order, node] of robot.plan.entries()) {
+                            try {
+                                const planToNode = new PlanToNode();
+                                planToNode.order = order;
+                                planToNode.node = await MapNode.findOneOrFail({ value: node[0] });
+                                planToNode.plan = robotEntity.plan;
+                                await planToNode.save();
+                            } catch (err) {
+                                console.error('TODO: Node not found, fix it: ' + node[0]);
+                            }
+                        }
+
+                        await robotEntity.save();
+                    }
+                } catch (err) {
+                    console.error(err);
+                    res.status(500).send();
+                    return;
+                }
+
+                res.status(200).send();
             });
     }
 }
