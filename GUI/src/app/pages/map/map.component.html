@@ -1,4 +1,4 @@
-<nb-card accent="primary">
+<nb-card accent="primary" [nbSpinner]="computingTask" nbSpinnerStatus="warning" nbSpinnerSize="giant">
   <nb-card-header>
     Map
   </nb-card-header>
@@ -12,7 +12,7 @@
 <i #tooltip id="tooltip" [nbTooltip]="tooltipTitle" nbTooltipStatus="warning" nbTooltipPlacement="right"
   nbTooltipAdjustment="horizontal" nbTooltipTrigger="noop"></i>
 
-<nb-card accent="primary">
+<nb-card accent="primary" [nbSpinner]="computingTask" nbSpinnerStatus="warning" nbSpinnerSize="giant">
   <nb-card-header>
     <div class="row">
       <div class="col-6">Task</div>

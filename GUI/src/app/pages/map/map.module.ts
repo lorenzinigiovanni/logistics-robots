@@ -6,6 +6,7 @@ import {
   NbCardModule,
   NbIconModule,
   NbInputModule,
+  NbSpinnerModule,
   NbToastrModule,
   NbTooltipModule,
 } from '@nebular/theme';
@@ -25,6 +26,7 @@ import { MapRoutingModule, routedComponents } from './map-routing.module';
     ReactiveFormsModule,
     NbAlertModule,
     NbToastrModule,
+    NbSpinnerModule,
   ],
   declarations: [
     ...routedComponents,

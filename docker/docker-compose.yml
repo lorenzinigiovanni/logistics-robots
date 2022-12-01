@@ -30,6 +30,7 @@ services:
     volumes:
       - ./../API:/usr/app
       - /usr/app/node_modules
+      - /usr/app/src/maof/build
     ports:
       - "3000:3000"
     depends_on:

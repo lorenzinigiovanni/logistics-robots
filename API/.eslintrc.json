@@ -25,12 +25,8 @@
         ],
         "indent": "error",
         "no-empty-function": "off",
-        "no-shadow": [
-            "error",
-            {
-                "hoist": "all"
-            }
-        ],
+        "no-shadow": "off",
+        "@typescript-eslint/no-shadow": ["error"],
         "quotes": [
             "error",
             "single"

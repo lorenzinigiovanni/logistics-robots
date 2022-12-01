@@ -26,6 +26,8 @@ export class MapComponent implements OnInit {
 
   acquiring = false;
 
+  computingTask = false;
+
   task = new Task();
   rooms: Room[];
 
@@ -40,10 +42,13 @@ export class MapComponent implements OnInit {
   }
 
   async ngOnInit() {
+    await this.loadMap();
+    this.rooms = await this.mapService.getRooms().toPromise();
+  }
+
+  async loadMap(): Promise<void> {
     const svg = await this.mapService.getMap().toPromise();
     this.map.nativeElement.innerHTML = svg;
-
-    this.rooms = await this.mapService.getRooms().toPromise();
   }
 
   onClick(e): void {
@@ -112,18 +117,24 @@ export class MapComponent implements OnInit {
     this.task.goals = [];
   }
 
-  onSend(): void {
-    this.tasksService.postTask(this.task).subscribe(() => {
-      this.toastrService.show(
-        `created successfully`,
-        `Task`,
-        {
-          status: 'success',
-        },
-      );
-    });
+  async onSend(): Promise<void> {
+    this.computingTask = true;
+
+    await this.tasksService.postTask(this.task).toPromise();
+
+    this.toastrService.show(
+      `created successfully`,
+      `Task`,
+      {
+        status: 'success',
+      },
+    );
 
     this.onCancel();
+
+    this.loadMap();
+
+    this.computingTask = false;
   }
 
   onCancel(): void {
@@ -142,6 +153,10 @@ export class MapComponent implements OnInit {
   }
 
   onDelete(i: number): void {
+    const room = this.rooms.find(r => r.ID === this.task.goals[i].ID);
+    const polyline = this.map.nativeElement.querySelector(`[id="${room.ID}"]`);
+    this.renderer.removeClass(polyline, 'selected');
+
     this.task.goals.splice(i, 1);
   }
 
