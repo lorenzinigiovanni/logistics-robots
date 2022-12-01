@@ -13,7 +13,6 @@ import { execShellCommand } from '../../tools/shell';
 import { manhattanDistanceFromNodes } from '../../tools/distance';
 import { Plan } from '../../entity/task/Plan';
 import { PlanToNode } from '../../entity/task/PlanToNode';
-import { createQueryBuilder } from 'typeorm';
 
 const maofBuildDir = path.join(__dirname, '..', '..', 'maof', 'build');
 
@@ -151,6 +150,14 @@ export class TaskController {
                 newTask.robot = selectedRobot;
                 await newTask.save();
 
+                try {
+                    await this.computePlan();
+                } catch (err) {
+                    console.error(err);
+                    res.status(500).send();
+                    return;
+                }
+
                 res.status(200).send();
             });
 
@@ -173,160 +180,8 @@ export class TaskController {
                 res.status(200).send(plans);
             })
             .post(async (req, res) => {
-                const settings = await Settings.findOne();
-
-                if (settings == null) {
-                    res.status(500).send();
-                    return;
-                }
-
-                const nodes = await MapNode.createQueryBuilder('node')
-                    .orderBy('node.value', 'ASC')
-                    .getMany();
-
-                const edges = await MapEdge
-                    .createQueryBuilder('edge')
-                    .leftJoin('edge.node1', 'node1')
-                    .addSelect(['node1.ID', 'node1.value'])
-                    .leftJoin('edge.node2', 'node2')
-                    .addSelect(['node2.ID', 'node2.value'])
-                    .getMany();
-
-                const robots = await Robot.createQueryBuilder('robot')
-                    .leftJoinAndSelect('robot.tasks', 'task')
-                    .leftJoinAndSelect('task.taskToRooms', 'taskToRooms')
-                    .leftJoinAndSelect('taskToRooms.room', 'room')
-                    .leftJoinAndSelect('room.node', 'node')
-                    .orderBy({ 'robot.number': 'ASC', 'task.createdAt': 'ASC', 'taskToRooms.order': 'ASC' })
-                    .getMany();
-
-                for (const robot of robots) {
-                    robot.tasks = robot.tasks.filter(task => task.status === TaskStatus.IN_EXECUTION || task.status === TaskStatus.ASSIGNED);
-                    for (const task of robot.tasks) {
-                        if (task.taskToRooms) {
-                            task.goals = task.taskToRooms.filter(taskToRoom => !taskToRoom.completed).map(taskToRoom => taskToRoom.room);
-                        }
-                    }
-                }
-
-                // generate nodes list
-                const nodeList = Array.from(Array(nodes.length), () => Array(4).fill(0));
-                for (let i = 0; i < nodes.length; i++) {
-                    // value (starts from 1), ID (starts from 0), x, y
-                    nodeList[i] = [nodes[i].value, nodes[i].value - 1, nodes[i].x, nodes[i].y];
-                }
-
-                // generate agents list
-                const agentList = [];
-                for (const robot of robots) {
-                    let agentTask: number[] = [];
-                    for (const task of robot.tasks) {
-                        if (task.goals) {
-                            for (const goal of task.goals) {
-                                agentTask.push(goal.node.value);
-                            }
-                        }
-                    }
-
-                    agentTask = agentTask.flat();
-                    const robotNode = await robot.getPosition();
-
-                    agentList.push({
-                        'ID': robot.number,
-                        'initPos': [robotNode.value],
-                        'endPos': [agentTask.length > 0 ? agentTask[agentTask.length - 1] : robotNode.value],
-                        'goalPos': agentTask.slice(0, -1).map((value: number) => [value]),
-                        'priority': 0,
-                        'name': robot.name,
-                    });
-                }
-
-                // generate adjacency list
-                const adjacencyList = Array.from(Array(nodes.length), () => Array(nodes.length).fill(0));
-                for (let i = 0; i < nodes.length; i++) {
-                    adjacencyList[i][i] = 1;
-
-                    const node = nodes.find((n: MapNode) => n.value === i + 1);
-
-                    if (node == null) {
-                        res.status(404).send();
-                        return;
-                    }
-
-                    const filteredEdges = edges.filter((e: MapEdge) => e.node1.ID === node.ID);
-
-                    for (const edge of filteredEdges) {
-                        const j = edge.node2.value - 1;
-
-                        adjacencyList[i][j] = 1;
-                        adjacencyList[j][i] = 1;
-                    }
-                }
-
-                const jsonList = {
-                    'nAgents': robots.length,
-                    'nodes': nodeList,
-                    'agents': agentList,
-                    'connect': adjacencyList,
-                    'MAPF': settings.MAPFalgorithm,
-                    'SAPF': settings.SAPFalgorithm,
-                    'costFunction': settings.costFunction,
-                    'heuristic': '',
-                };
-
-                const inputFilePath = path.join(maofBuildDir, 'input.json');
-                const outputFilePath = path.join(maofBuildDir, 'output.json');
-
-                const json = JSON.stringify(jsonList);
-                await fs.writeFile(inputFilePath, json, 'utf8');
-
-                const cmd = 'cd ' + maofBuildDir + ' && ' + './MAOFexec' + ' ' + 'input.json' + ' ' + settings?.MAPFalgorithm + ' ' + settings?.costFunction + ' ' + settings?.SAPFalgorithm;
-
                 try {
-                    await execShellCommand(cmd);
-                } catch (err) {
-                    console.error(err);
-                    res.status(500).send();
-                    return;
-                }
-
-                let rawdata = '';
-                try {
-                    rawdata = await fs.readFile(outputFilePath, 'utf8');
-                } catch (err) {
-                    console.error(err);
-                    res.status(500).send();
-                    return;
-                }
-                const outputJson = JSON.parse(rawdata);
-
-                await fs.unlink(inputFilePath);
-                await fs.unlink(outputFilePath);
-
-                await Plan.delete({});
-
-                try {
-                    for (const robot of outputJson.agents) {
-                        const robotEntity = await Robot.findOneOrFail({ number: robot.ID });
-
-                        const plan = new Plan();
-                        await plan.save();
-                        robotEntity.plan = plan;
-
-                        for (const [order, node] of robot.plan.entries()) {
-                            try {
-                                const planToNode = new PlanToNode();
-                                planToNode.order = order;
-                                planToNode.node = await MapNode.findOneOrFail({ value: node[0] });
-                                planToNode.plan = robotEntity.plan;
-                                await planToNode.save();
-                            } catch (err) {
-                                console.error('TODO: Node not found, fix it: ' + node[0]);
-                            }
-                        }
-
-                        await robotEntity.save();
-                    }
+                    await this.computePlan();
                 } catch (err) {
                     console.error(err);
                     res.status(500).send();
@@ -335,5 +190,147 @@ export class TaskController {
 
                 res.status(200).send();
             });
+    }
+
+    static async computePlan(): Promise<void> {
+        const settings = await Settings.findOne();
+
+        if (settings == null) {
+            throw new Error('Settings not found');
+        }
+
+        const nodes = await MapNode.createQueryBuilder('node')
+            .orderBy('node.value', 'ASC')
+            .getMany();
+
+        const edges = await MapEdge
+            .createQueryBuilder('edge')
+            .leftJoin('edge.node1', 'node1')
+            .addSelect(['node1.ID', 'node1.value'])
+            .leftJoin('edge.node2', 'node2')
+            .addSelect(['node2.ID', 'node2.value'])
+            .getMany();
+
+        const robots = await Robot.createQueryBuilder('robot')
+            .leftJoinAndSelect('robot.tasks', 'task')
+            .leftJoinAndSelect('task.taskToRooms', 'taskToRooms')
+            .leftJoinAndSelect('taskToRooms.room', 'room')
+            .leftJoinAndSelect('room.node', 'node')
+            .orderBy({ 'robot.number': 'ASC', 'task.createdAt': 'ASC', 'taskToRooms.order': 'ASC' })
+            .getMany();
+
+        for (const robot of robots) {
+            robot.tasks = robot.tasks.filter(task => task.status === TaskStatus.IN_EXECUTION || task.status === TaskStatus.ASSIGNED);
+            for (const task of robot.tasks) {
+                if (task.taskToRooms) {
+                    task.goals = task.taskToRooms.filter(taskToRoom => !taskToRoom.completed).map(taskToRoom => taskToRoom.room);
+                }
+            }
+        }
+
+        // generate nodes list
+        const nodeList = Array.from(Array(nodes.length), () => Array(4).fill(0));
+        for (let i = 0; i < nodes.length; i++) {
+            // value (starts from 1), ID (starts from 0), x, y
+            nodeList[i] = [nodes[i].value, nodes[i].value - 1, nodes[i].x, nodes[i].y];
+        }
+
+        // generate agents list
+        const agentList = [];
+        for (const robot of robots) {
+            let agentTask: number[] = [];
+            for (const task of robot.tasks) {
+                if (task.goals) {
+                    for (const goal of task.goals) {
+                        agentTask.push(goal.node.value);
+                    }
+                }
+            }
+
+            agentTask = agentTask.flat();
+            const robotNode = await robot.getPosition();
+
+            agentList.push({
+                'ID': robot.number,
+                'initPos': [robotNode.value],
+                'endPos': [agentTask.length > 0 ? agentTask[agentTask.length - 1] : robotNode.value],
+                'goalPos': agentTask.slice(0, -1).map((value: number) => [value]),
+                'priority': 0,
+                'name': robot.name,
+            });
+        }
+
+        // generate adjacency list
+        const adjacencyList = Array.from(Array(nodes.length), () => Array(nodes.length).fill(0));
+        for (let i = 0; i < nodes.length; i++) {
+            adjacencyList[i][i] = 1;
+
+            const node = nodes.find((n: MapNode) => n.value === i + 1);
+
+            if (node == null) {
+                throw new Error('Node not found');
+            }
+
+            const filteredEdges = edges.filter((e: MapEdge) => e.node1.ID === node.ID);
+
+            for (const edge of filteredEdges) {
+                const j = edge.node2.value - 1;
+
+                adjacencyList[i][j] = 1;
+                adjacencyList[j][i] = 1;
+            }
+        }
+
+        const jsonList = {
+            'nAgents': robots.length,
+            'nodes': nodeList,
+            'agents': agentList,
+            'connect': adjacencyList,
+            'MAPF': settings.MAPFalgorithm,
+            'SAPF': settings.SAPFalgorithm,
+            'costFunction': settings.costFunction,
+            'heuristic': '',
+        };
+
+        const inputFilePath = path.join(maofBuildDir, 'input.json');
+        const outputFilePath = path.join(maofBuildDir, 'output.json');
+
+        const json = JSON.stringify(jsonList);
+        await fs.writeFile(inputFilePath, json, 'utf8');
+
+        const cmd = 'cd ' + maofBuildDir + ' && ' + './MAOFexec' + ' ' + 'input.json' + ' ' + settings?.MAPFalgorithm + ' ' + settings?.costFunction + ' ' + settings?.SAPFalgorithm;
+
+        await execShellCommand(cmd);
+
+        let rawdata = '';
+        rawdata = await fs.readFile(outputFilePath, 'utf8');
+        const outputJson = JSON.parse(rawdata);
+
+        await fs.unlink(inputFilePath);
+        await fs.unlink(outputFilePath);
+
+        await Plan.delete({});
+
+        for (const robot of outputJson.agents) {
+            const robotEntity = await Robot.findOneOrFail({ number: robot.ID });
+
+            const plan = new Plan();
+            await plan.save();
+            robotEntity.plan = plan;
+
+            for (const [order, node] of robot.plan.entries()) {
+                try {
+                    const planToNode = new PlanToNode();
+                    planToNode.order = order;
+                    planToNode.node = await MapNode.findOneOrFail({ value: node[0] });
+                    planToNode.plan = robotEntity.plan;
+                    await planToNode.save();
+                } catch (err) {
+                    console.error('TODO: Node not found, fix it: ' + node[0]);
+                }
+            }
+
+            await robotEntity.save();
+        }
     }
 }
