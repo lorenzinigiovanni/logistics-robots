@@ -298,7 +298,7 @@ export class TaskController {
         const json = JSON.stringify(jsonList);
         await fs.writeFile(inputFilePath, json, 'utf8');
 
-        const cmd = 'cd ' + maofBuildDir + ' && ' + './MAOFexec' + ' ' + 'input.json' + ' ' + settings?.MAPFalgorithm + ' ' + settings?.costFunction + ' ' + settings?.SAPFalgorithm;
+        const cmd = 'cd ' + maofBuildDir + ' && ' + './MAOFexec' + ' ' + 'input.json';
 
         await execShellCommand(cmd);
 
