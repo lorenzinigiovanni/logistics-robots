@@ -7,29 +7,42 @@
     <form [formGroup]="settingsForm" (ngSubmit)="onSubmit(settingsForm.value)">
 
       <div class="row">
-        <div class="form-group col-12">
+        <div class="form-group col-6">
           <label class="label">MAPF Algorithm type</label>
           <nb-select fullWidth name="inputMAPFAlgorithm" formControlName="MAPFalgorithm"
             [status]="(settingsForm.controls.MAPFalgorithm.invalid) ? 'danger' : 'basic'">
+            <nb-option value="A*">A*</nb-option>
+            <nb-option value="A*+ID">A*+ID</nb-option>
+            <nb-option value="A*+OD">A*+OD</nb-option>
+            <nb-option value="A*+ID+OD">A*+ID+OD</nb-option>
             <nb-option value="CP">CP</nb-option>
-            <nb-option value="ICTS">ICTS</nb-option>
             <nb-option value="CBS">CBS</nb-option>
-            <nb-option value="A* + OD + ID">A* + OD + ID</nb-option>
+            <nb-option value="ICTS">ICTS</nb-option>
           </nb-select>
         </div>
-        <div class="form-group col-12">
-          <label class="label">SAPF Algorithm type</label>
-          <nb-select fullWidth name="inputSAPFAlgorithm" formControlName="SAPFalgorithm"
-            [status]="(settingsForm.controls.SAPFalgorithm.invalid) ? 'danger' : 'basic'">
-            <nb-option value="TDSP">TDSP</nb-option>
-          </nb-select>
-        </div>
-        <div class="form-group col-12">
+        <div class="form-group col-6">
           <label class="label">Cost function</label>
           <nb-select fullWidth name="inputCostFunction" formControlName="costFunction"
             [status]="(settingsForm.controls.costFunction.invalid) ? 'danger' : 'basic'">
             <nb-option value="MKS">MKS</nb-option>
             <nb-option value="SIC">SIC</nb-option>
+          </nb-select>
+        </div>
+        <div class="form-group col-6">
+          <label class="label">SAPF Algorithm type</label>
+          <nb-select fullWidth name="inputSAPFAlgorithm" formControlName="SAPFalgorithm"
+            [status]="(settingsForm.controls.SAPFalgorithm.invalid) ? 'danger' : 'basic'">
+            <nb-option value="A*">A*</nb-option>
+            <nb-option value="ST">ST</nb-option>
+            <nb-option value="TDSP">TDSP</nb-option>
+          </nb-select>
+        </div>
+        <div class="form-group col-6" *ngIf="settingsForm.value.SAPFalgorithm == 'A*'">
+          <label class="label">Heuristic</label>
+          <nb-select fullWidth name="inputHeuristic" formControlName="heuristic"
+            [status]="(settingsForm.controls.heuristic.invalid) ? 'danger' : 'basic'">
+            <nb-option value="MANHATTAN">MANHATTAN</nb-option>
+            <nb-option value="EUCLIDEAN">EUCLIDEAN</nb-option>
           </nb-select>
         </div>
       </div>
@@ -71,7 +84,8 @@
         <input nbInput class="form-control" type="file" accept=".png,.jpg,.jpeg" (change)="onChange($event)" fullWidth>
       </div>
       <div class="col-sm-3">
-        <button nbButton fullWidth (click)="onUpload()" status="primary" [disabled]="!enabled_upload_button || loading" [nbSpinner]="loading" nbSpinnerStatus="primary">
+        <button nbButton fullWidth (click)="onUpload()" status="primary" [disabled]="!enabled_upload_button || loading"
+          [nbSpinner]="loading" nbSpinnerStatus="primary">
           Upload
         </button>
       </div>

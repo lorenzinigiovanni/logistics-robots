@@ -15,6 +15,9 @@ export class Settings {
     costFunction!: string;
 
     @Expose()
+    heuristic!: string;
+
+    @Expose()
     robotRadius!: number;
 
     @Expose()

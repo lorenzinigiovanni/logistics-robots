@@ -25,6 +25,7 @@ export class SettingsComponent implements OnInit {
       [
         Validators.required,
       ]),
+    heuristic: new FormControl(null),
     // robot
     robotRadius: new FormControl(null,
       [
@@ -94,12 +95,10 @@ export class SettingsComponent implements OnInit {
   // On file Select
   onChange(event) {
     this.file = event.target.files[0];
-    if (this.file)
-    {
+    if (this.file) {
       this.enabled_upload_button = true;
     }
-    else
-    {
+    else {
       this.enabled_upload_button = false;
     }
   }

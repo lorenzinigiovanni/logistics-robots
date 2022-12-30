@@ -289,7 +289,7 @@ export class TaskController {
             'MAPF': settings.MAPFalgorithm,
             'SAPF': settings.SAPFalgorithm,
             'costFunction': settings.costFunction,
-            'heuristic': '',
+            'heuristic': settings.heuristic,
         };
 
         const inputFilePath = path.join(maofBuildDir, 'input.json');
