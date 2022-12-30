@@ -16,6 +16,9 @@ export class Settings extends CustomBaseEntity {
     @Column()
     costFunction!: string;
 
+    @Column({ nullable: true })
+    heuristic!: string;
+
     @Column('float')
     robotRadius!: number;
 

@@ -14,6 +14,7 @@ import { Task } from '../../entity/task/Task';
 import { generateName } from '../../tools/name-generator';
 import { execShellCommand } from '../../tools/shell';
 import { Plan } from '../../entity/task/Plan';
+import { Robot } from '../../entity/robot/Robot';
 
 const pythonDir = path.join(__dirname, '..', '..', 'scripts');
 
@@ -88,6 +89,7 @@ export class MapController {
 
                 // delete all nodes, edges and rooms
                 await MapNode.delete({});
+                await Room.delete({});
                 await Task.delete({});
 
                 // add nodes to db
@@ -240,7 +242,7 @@ export class MapController {
                         polylines.push({
                             '@points': points.join(' '),
                             '@stroke-width': 8,
-                            '@stroke': stringToColour(plan.robot.name),
+                            '@stroke': robotColor(plan.robot.number, await Robot.count()),
                             '@fill': 'none',
                         });
                     }
@@ -284,15 +286,7 @@ export class MapController {
 
 }
 
-function stringToColour(str: string): string {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    let colour = '#';
-    for (let i = 0; i < 3; i++) {
-        const value = (hash >> (i * 8)) & 0xFF;
-        colour += ('00' + value.toString(16)).substr(-2);
-    }
-    return colour;
+function robotColor(index: number, robotCount: number): string {
+    const hue = index / robotCount * 360;
+    return `hsl(${hue}, 100%, 50%)`;
 }
