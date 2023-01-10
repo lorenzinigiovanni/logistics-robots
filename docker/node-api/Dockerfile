@@ -91,7 +91,7 @@ COPY ./API/src/maof /tmp/maof
 WORKDIR /tmp/maof
 
 RUN rm -rf /usr/app/src/maof/build/* && \
-    cmake -DCMAKE_BUILD_TYPE=Debug -B /usr/app/src/maof/build -S . && \
+    cmake -DCMAKE_BUILD_TYPE=Release -B /usr/app/src/maof/build -S . && \
     cmake --build /usr/app/src/maof/build -- -j
 
 WORKDIR /usr/app
