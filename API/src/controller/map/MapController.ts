@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import multer from 'multer';
 import { png2svg } from 'svg-png-converter';
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
+import os from 'os';
 
 import { MapNode } from '../../entity/map/MapNode';
 import { MapEdge } from '../../entity/map/MapEdge';
@@ -29,6 +30,13 @@ export class MapController {
                 if (file == null) {
                     res.status(500).send();
                     return;
+                }
+
+                let python = '';
+                if (os.type() === 'Windows_NT') {
+                    python = path.join(pythonDir, 'venv', 'Scripts', 'python.exe');
+                } else {
+                    python = path.join(pythonDir, 'venv', 'bin', 'python');
                 }
 
                 const pyScript = path.join(pythonDir, 'map_decomposition', 'map_decomposition.py');
@@ -64,7 +72,7 @@ export class MapController {
                     settings.robotRadius,
                 ];
 
-                const cmd = 'conda run -n logistics-robots python ' + pyScript + ' ' + parameters.join(' ');
+                const cmd = python + ' ' + pyScript + ' ' + parameters.join(' ');
                 try {
                     await execShellCommand(cmd);
                 } catch (err) {
