@@ -5,7 +5,7 @@ import {
     HttpEvent,
     HttpInterceptor
 } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { NbAuthJWTToken, NbAuthService } from '@nebular/auth';
 
 @Injectable()

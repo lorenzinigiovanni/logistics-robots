@@ -1,4 +1,4 @@
-import { Expose, Type } from 'class-transformer/decorators';
+import { Expose, Type } from 'class-transformer';
 
 import { MapNode } from '../map/mapNode.entity';
 import { Robot } from "../robots/robot.entity";

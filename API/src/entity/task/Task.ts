@@ -1,5 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany, CreateDateColumn, Column } from 'typeorm';
-import { CustomBaseEntity } from '../CustomBaseEntity';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany, CreateDateColumn, Column } from 'typeorm';
 import { Room } from '../map/Room';
 import { Robot } from '../robot/Robot';
 import { TaskToRoom } from './TaskToRoom';
@@ -12,7 +11,7 @@ export enum TaskStatus {
 }
 
 @Entity()
-export class Task extends CustomBaseEntity {
+export class Task extends BaseEntity {
 
     @PrimaryGeneratedColumn('uuid')
     ID!: string;

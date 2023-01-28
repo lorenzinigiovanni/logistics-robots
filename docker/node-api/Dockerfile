@@ -67,7 +67,7 @@ RUN set -x && \
     /opt/conda/bin/conda clean -afy
 
 WORKDIR /tmp
-RUN curl -sL https://deb.nodesource.com/setup_16.x -o nodesource_setup.sh && \
+RUN curl -sL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh && \
     bash nodesource_setup.sh && \
     apt-get update -q && \
     apt install -q -y nodejs && \

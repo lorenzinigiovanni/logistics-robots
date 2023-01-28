@@ -23,7 +23,7 @@
                 "accessibility": "explicit"
             }
         ],
-        "indent": "error",
+        "indent": ["error", 4, { "SwitchCase": 1, "ignoredNodes": ["PropertyDefinition"] }],
         "no-empty-function": "off",
         "no-shadow": "off",
         "@typescript-eslint/no-shadow": ["error"],

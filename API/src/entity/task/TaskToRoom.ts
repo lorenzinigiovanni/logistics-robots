@@ -1,10 +1,9 @@
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { CustomBaseEntity } from '../CustomBaseEntity';
+import { BaseEntity, Entity, Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Room } from '../map/Room';
 import { Task } from './Task';
 
 @Entity()
-export class TaskToRoom extends CustomBaseEntity {
+export class TaskToRoom extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     public ID!: string;
 

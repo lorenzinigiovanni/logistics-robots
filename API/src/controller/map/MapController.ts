@@ -48,7 +48,7 @@ export class MapController {
                 map.svg = result.content;
                 await map.save();
 
-                const settings = await Settings.findOne();
+                const [settings] = await Settings.find();
 
                 if (settings == null) {
                     res.status(500).send();
@@ -166,7 +166,7 @@ export class MapController {
 
         app.route('/map/svg')
             .get(async (req, res) => {
-                const settings = await Settings.findOne();
+                const [settings] = await Settings.find();
 
                 if (settings == null) {
                     res.status(500).send();
@@ -177,7 +177,7 @@ export class MapController {
 
                 // map
 
-                const map = await Map.findOne();
+                const [map] = await Map.find();
 
                 if (map == null) {
                     res.status(500).send();
@@ -271,14 +271,14 @@ export class MapController {
 
         app.route('/map/rooms/:ID')
             .put(async (req, res) => {
-                const room = await Room.findById(req.params.ID);
+                const room = await Room.findOneBy({ ID: req.params.ID });
 
                 if (room == null) {
                     res.status(404).send();
                     return;
                 }
 
-                Room.update(room, req.body);
+                Room.update(room.ID, req.body);
 
                 res.status(200).send();
             });
