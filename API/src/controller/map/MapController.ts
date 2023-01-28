@@ -17,7 +17,7 @@ import { execShellCommand } from '../../tools/shell';
 import { Plan } from '../../entity/task/Plan';
 import { Robot } from '../../entity/robot/Robot';
 
-const pythonDir = path.join(__dirname, '..', '..', 'scripts');
+const pythonDir = path.join(__dirname, '..', '..', '..', 'src', 'scripts');
 
 export class MapController {
 

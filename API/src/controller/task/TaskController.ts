@@ -14,7 +14,7 @@ import { manhattanDistanceFromNodes } from '../../tools/distance';
 import { Plan } from '../../entity/task/Plan';
 import { PlanToNode } from '../../entity/task/PlanToNode';
 
-const maofBuildDir = path.join(__dirname, '..', '..', 'maof', 'build');
+const maofBuildDir = path.join(__dirname, '..', '..', '..', 'src', 'maof', 'build');
 
 export class TaskController {
 

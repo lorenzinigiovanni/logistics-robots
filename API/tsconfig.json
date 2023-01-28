@@ -13,5 +13,9 @@
         "outDir": "./build",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true
-    }
+    },
+    "exclude": [
+        "**/maof/**",
+        "**/scripts/**",
+    ]
 }
