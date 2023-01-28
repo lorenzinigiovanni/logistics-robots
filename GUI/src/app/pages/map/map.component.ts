@@ -89,13 +89,14 @@ export class MapComponent implements OnInit {
   }
 
   onMouseMove(e): void {
+    let newTitle = '';
     if (e.target.id) {
       const room = this.rooms.find(r => r.ID === e.target.id);
-      this.tooltipTitle = room.name;
+      newTitle = room.name;
     }
-    else {
-      this.tooltipTitle = '';
-    }
+
+    // Change the title by adding a space to force the tooltip to update
+    this.tooltipTitle = this.tooltipTitle == newTitle ? newTitle + ' ' : newTitle;
 
     this.tooltipHtml.nativeElement.style.top = e.pageY + 'px';
     this.tooltipHtml.nativeElement.style.left = e.pageX + 'px';
