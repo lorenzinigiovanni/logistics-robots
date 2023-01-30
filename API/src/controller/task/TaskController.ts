@@ -14,7 +14,7 @@ import { manhattanDistanceFromNodes } from '../../tools/distance';
 import { Plan } from '../../entity/task/Plan';
 import { PlanToNode } from '../../entity/task/PlanToNode';
 
-const maofBuildDir = path.join(__dirname, '..', '..', 'maof', 'build');
+const maofBuildDir = path.join(__dirname, '..', '..', '..', 'src', 'maof', 'build');
 
 export class TaskController {
 
@@ -193,7 +193,7 @@ export class TaskController {
     }
 
     static async computePlan(): Promise<void> {
-        const settings = await Settings.findOne();
+        const [settings] = await Settings.find();
 
         if (settings == null) {
             throw new Error('Settings not found');
@@ -312,7 +312,7 @@ export class TaskController {
         await Plan.delete({});
 
         for (const robot of outputJson.agents) {
-            const robotEntity = await Robot.findOneOrFail({ number: robot.ID });
+            const robotEntity = await Robot.findOneOrFail({ where: { number: robot.ID } });
 
             const plan = new Plan();
             await plan.save();
@@ -322,7 +322,7 @@ export class TaskController {
                 try {
                     const planToNode = new PlanToNode();
                     planToNode.order = order;
-                    planToNode.node = await MapNode.findOneOrFail({ value: node[0] });
+                    planToNode.node = await MapNode.findOneOrFail({ where: { value: node[0] } });
                     planToNode.plan = robotEntity.plan;
                     await planToNode.save();
                 } catch (err) {

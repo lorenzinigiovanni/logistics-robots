@@ -5,12 +5,10 @@
     "baseUrl": "./",
     "module": "commonjs",
     "types": [
-      "jasmine",
       "node"
     ]
   },
   "files": [
-    "test.ts",
     "polyfills.ts"
   ],
   "include": [

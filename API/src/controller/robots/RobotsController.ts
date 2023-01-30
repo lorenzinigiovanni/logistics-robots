@@ -25,7 +25,7 @@ export class RobotsController {
 
         app.route('/robots/:ID')
             .get(async (req, res) => {
-                const robot = await Robot.findById(req.params.ID);
+                const robot = await Robot.findOneBy({ ID: req.params.ID });
 
                 if (robot == null) {
                     res.status(404).send();
@@ -35,19 +35,19 @@ export class RobotsController {
                 res.status(200).send(robot);
             })
             .put(async (req, res) => {
-                const robot = await Robot.findById(req.params.ID);
+                const robot = await Robot.findOneBy({ ID: req.params.ID });
 
                 if (robot == null) {
                     res.status(404).send();
                     return;
                 }
 
-                Robot.update(robot, req.body);
+                Robot.update(robot.ID, req.body);
 
                 res.status(200).send();
             })
             .delete(async (req, res) => {
-                const robot = await Robot.findById(req.params.ID);
+                const robot = await Robot.findOneBy({ ID: req.params.ID });
 
                 if (robot == null) {
                     res.status(404).send();

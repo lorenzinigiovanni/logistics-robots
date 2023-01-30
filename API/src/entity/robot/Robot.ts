@@ -1,12 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinColumn, OneToOne } from 'typeorm';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinColumn, OneToOne } from 'typeorm';
 import { euclideanDistance } from '../../tools/distance';
-import { CustomBaseEntity } from '../CustomBaseEntity';
 import { MapNode } from '../map/MapNode';
 import { Plan } from '../task/Plan';
 import { Task } from '../task/Task';
 
 @Entity()
-export class Robot extends CustomBaseEntity {
+export class Robot extends BaseEntity {
 
     @PrimaryGeneratedColumn('uuid')
     ID!: string;
@@ -27,9 +26,9 @@ export class Robot extends CustomBaseEntity {
     theta!: number;
 
     @OneToMany(() => Task, task => task.robot)
-    tasks!: Task[]
+    tasks!: Task[];
 
-    @OneToOne(() => Plan, plan => plan.robot, {onDelete: 'SET NULL'})
+    @OneToOne(() => Plan, plan => plan.robot, { onDelete: 'SET NULL' })
     @JoinColumn()
     plan?: Plan;
 

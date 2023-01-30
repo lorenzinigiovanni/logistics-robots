@@ -1,10 +1,9 @@
-import { Entity, Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { CustomBaseEntity } from '../CustomBaseEntity';
+import { BaseEntity, Entity, Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { MapNode } from '../map/MapNode';
 import { Plan } from './Plan';
 
 @Entity()
-export class PlanToNode extends CustomBaseEntity {
+export class PlanToNode extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     public ID!: string;
 

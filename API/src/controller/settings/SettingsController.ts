@@ -9,7 +9,7 @@ export class SettingsController {
 
         app.route('/settings')
             .get(async (req, res) => {
-                const settings = await Settings.findOne();
+                const [settings] = await Settings.find();
 
                 if (settings == null) {
                     res.status(404).send();
@@ -19,14 +19,14 @@ export class SettingsController {
                 res.status(200).send(settings);
             })
             .put(async (req, res) => {
-                const settings = await Settings.findOne();
+                const [settings] = await Settings.find();
 
                 if (settings == null) {
                     res.status(404).send();
                     return;
                 }
 
-                Settings.update(settings, req.body);
+                Settings.update(settings.ID, req.body);
 
                 res.status(200).send();
             });

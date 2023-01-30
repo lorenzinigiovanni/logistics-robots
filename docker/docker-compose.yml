@@ -17,7 +17,7 @@ services:
       - POSTGRES_PASSWORD=logistics_robots
     ports:
       - "5432:5432"
-    volumes: 
+    volumes:
       - db:/var/lib/postgresql/data
   api:
     build:
@@ -31,6 +31,7 @@ services:
       - ./../API:/usr/app
       - /usr/app/node_modules
       - /usr/app/src/maof/build
+      - /usr/app/src/scripts/venv
     ports:
       - "3000:3000"
     depends_on:

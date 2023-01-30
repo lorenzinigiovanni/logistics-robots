@@ -1,5 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, OneToMany, OneToOne } from 'typeorm';
-import { CustomBaseEntity } from '../CustomBaseEntity';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, OneToMany, OneToOne } from 'typeorm';
 
 import { MapNode } from '../map/MapNode';
 import { Robot } from '../robot/Robot';
@@ -7,7 +6,7 @@ import { PlanToNode } from './PlanToNode';
 
 
 @Entity()
-export class Plan extends CustomBaseEntity {
+export class Plan extends BaseEntity {
 
     @PrimaryGeneratedColumn('uuid')
     ID!: string;

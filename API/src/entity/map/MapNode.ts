@@ -1,8 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { CustomBaseEntity } from '../CustomBaseEntity';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
-export class MapNode extends CustomBaseEntity {
+export class MapNode extends BaseEntity {
 
     @PrimaryGeneratedColumn('uuid')
     ID!: string;
