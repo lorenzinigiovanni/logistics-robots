@@ -56,6 +56,8 @@ export class Main {
                 RobotsController.route(app);
                 TaskController.route(app);
 
+                await RobotsController.subscribeToRobotPosition();
+
                 app.listen(3000);
                 // eslint-disable-next-line no-console
                 console.log('Express application is up and running on port 3000');

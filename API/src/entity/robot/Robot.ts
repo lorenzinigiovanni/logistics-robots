@@ -32,14 +32,22 @@ export class Robot extends BaseEntity {
     @JoinColumn()
     plan?: Plan;
 
+    @Column('float', { nullable: true })
+    currentX = 0.0;
+
+    @Column('float', { nullable: true })
+    currentY = 0.0;
+
+    @Column('float', { nullable: true })
+    currentTheta = 0.0;
+
     async getPosition(): Promise<MapNode> {
         const nodes = await MapNode.createQueryBuilder('node')
             .orderBy('node.value', 'ASC')
             .getMany();
 
-        // TODO: obtain from ROS x,y position, for now use this.x, this.y
-        const robotX = this.x;
-        const robotY = this.y;
+        const robotX = this.currentX | this.x;
+        const robotY = this.currentY | this.y;
 
         let minDistance = Infinity;
         let nearestNode = null;
