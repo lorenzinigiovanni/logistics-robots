@@ -49,6 +49,7 @@ export class MapComponent implements OnInit {
   async loadMap(): Promise<void> {
     const svg = await this.mapService.getMap().toPromise();
     this.map.nativeElement.innerHTML = svg;
+    setTimeout(() => { this.loadMap() }, 1000 * 1)
   }
 
   onClick(e): void {
