@@ -9,18 +9,19 @@
       <thead>
         <tr>
           <th>Status</th>
+          <th class="text-center">Progress</th>
           <th class="text-center">Robot</th>
-          <th class="text-center">Initial position</th>
-          <th class="text-center">Current position</th>
           <th class="text-center">Goal set</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let task of tasks | async">
-          <td class="align-middle">status</td>
+          <td class="align-middle">{{task.status | lrEnum}}</td>
+          <td class="align-middle">
+            <nb-progress-bar value="{{100 * task.completedGoals.length / task.goals.length}}"
+              status="{{task.completedGoals.length === task.goals.length ? 'success' : 'primary'}}"></nb-progress-bar>
+          </td>
           <td class="align-middle text-center">{{task.robot?.name ? task.robot.name : 'None'}}</td>
-          <td class="align-middle text-center">init(x,y)</td>
-          <td class="align-middle text-center">current(x,y)</td>
           <td class="align-middle text-center">
             <div *ngFor="let goal of task.goals">{{goal.name}}</div>
           </td>

@@ -33,6 +33,7 @@ export class TaskController {
                 for (const task of tasks) {
                     if (task.taskToRooms) {
                         task.goals = task.taskToRooms.map(taskToRoom => taskToRoom.room);
+                        task.completedGoals = task.taskToRooms.filter(taskToRoom => taskToRoom.completed).map(taskToRoom => taskToRoom.room);
                         delete task.taskToRooms;
                     }
                 }

@@ -16,4 +16,15 @@ export class Task {
   @Type(() => Room)
   goals!: Room[];
 
+  @Expose()
+  @Type(() => Room)
+  completedGoals?: Room[];
+
+  @Expose()
+  @Type(() => Date)
+  createdAt!: Date;
+
+  @Expose()
+  public status!: string;
+
 }
