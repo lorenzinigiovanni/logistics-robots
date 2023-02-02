@@ -251,7 +251,7 @@ export class TaskController {
             const robotNode = await robot.getPosition();
 
             agentList.push({
-                'ID': robot.number,
+                'ID': robot.number - 1,
                 'initPos': [robotNode.value],
                 'endPos': [agentTask.length > 0 ? agentTask[agentTask.length - 1] : robotNode.value],
                 'goalPos': agentTask.slice(0, -1).map((value: number) => [value]),
@@ -312,7 +312,7 @@ export class TaskController {
         await Plan.delete({});
 
         for (const robot of outputJson.agents) {
-            const robotEntity = await Robot.findOneOrFail({ where: { number: robot.ID } });
+            const robotEntity = await Robot.findOneOrFail({ where: { number: robot.ID + 1 } });
 
             const plan = new Plan();
             await plan.save();
