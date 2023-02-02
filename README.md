@@ -36,6 +36,7 @@ Install necessary packages:
 ```bash
 sudo apt install ros-humble-navigation2 ros-humble-nav2-bringup
 sudo apt install ros-humble-turtlebot3*
+pip3 install ros2bridge
 ```
 
 Automatically source ROS 2 in your bashrc:
@@ -146,6 +147,7 @@ TOKEN_SECRET=secret
 MAIL_ADDRESS=mail@example.com
 MAIL_PASSWORD=MailPassword
 MAIL_SERVER=mail.example.com
+ROS_URL=ws://localhost:9020
 ```
 
 Compile the backend:
@@ -174,6 +176,14 @@ Start the simulator:
 $ cd logistics-robots/ros2_ws
 $ source install/setup.bash
 $ ros2 launch turtlebot3_nav multi_tb3_simulation_launch.py
+```
+
+Start ros2bridge:
+
+```bash
+$ cd logistics-robots/ros2_ws
+$ source install/setup.bash
+$ python3 -m ros2bridge -n
 ```
 
 Start the backend:
