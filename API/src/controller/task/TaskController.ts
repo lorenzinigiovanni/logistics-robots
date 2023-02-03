@@ -13,8 +13,12 @@ import { execShellCommand } from '../../tools/shell';
 import { manhattanDistanceFromNodes } from '../../tools/distance';
 import { Plan } from '../../entity/task/Plan';
 import { PlanToNode } from '../../entity/task/PlanToNode';
+import { ActionClient } from '../../ros2bridge/ActionClient';
+import { eulerToQuaternion } from '../../tools/quaternion';
 
 const maofBuildDir = path.join(__dirname, '..', '..', '..', 'src', 'maof', 'build');
+const actionClients = new Map<number, ActionClient>();
+const currentWaypoints = new Map<number, number>();
 
 export class TaskController {
 
@@ -41,6 +45,14 @@ export class TaskController {
                 res.status(200).send(tasks);
             })
             .post(async (req, res) => {
+                try {
+                    await this.stopPlan();
+                } catch (err) {
+                    console.error(err);
+                    res.status(500).send();
+                    return;
+                }
+
                 const newTask = new Task();
                 newTask.taskToRooms = [];
 
@@ -153,36 +165,7 @@ export class TaskController {
 
                 try {
                     await this.computePlan();
-                } catch (err) {
-                    console.error(err);
-                    res.status(500).send();
-                    return;
-                }
-
-                res.status(200).send();
-            });
-
-        app.route('/plans')
-            .get(async (req, res) => {
-                const plans = await Plan.createQueryBuilder('plan')
-                    .leftJoinAndSelect('plan.robot', 'robot')
-                    .leftJoinAndSelect('plan.planToNodes', 'planToNodes')
-                    .leftJoinAndSelect('planToNodes.node', 'node')
-                    .orderBy({ 'planToNodes.order': 'ASC' })
-                    .getMany();
-
-                for (const plan of plans) {
-                    if (plan.planToNodes) {
-                        plan.nodes = plan.planToNodes.map(planToNode => planToNode.node);
-                        delete plan.planToNodes;
-                    }
-                }
-
-                res.status(200).send(plans);
-            })
-            .post(async (req, res) => {
-                try {
-                    await this.computePlan();
+                    await this.executePlan();
                 } catch (err) {
                     console.error(err);
                     res.status(500).send();
@@ -332,6 +315,190 @@ export class TaskController {
             }
 
             await robotEntity.save();
+        }
+    }
+
+    static async executePlan(): Promise<void> {
+        currentWaypoints.clear();
+
+        const tasks = await Task.createQueryBuilder('task')
+            .innerJoinAndSelect('task.robot', 'robot')
+            .innerJoinAndSelect('task.taskToRooms', 'taskToRooms')
+            .innerJoinAndSelect('taskToRooms.room', 'room')
+            .innerJoinAndSelect('room.node', 'node')
+            .where('taskToRooms.completed = :completed', { completed: false })
+            .orderBy({ 'robot.ID': 'ASC', 'task.createdAt': 'ASC', 'taskToRooms.order': 'ASC' })
+            .distinctOn(['robot.ID'])
+            .getMany();
+
+        for (const task of tasks) {
+            await Task.update(task.ID, { status: TaskStatus.IN_EXECUTION });
+        }
+
+        const plans = await Plan.createQueryBuilder('plan')
+            .innerJoinAndSelect('plan.robot', 'robot')
+            .innerJoinAndSelect('plan.planToNodes', 'planToNodes')
+            .innerJoinAndSelect('planToNodes.node', 'node')
+            .orderBy({ 'robot.number': 'ASC', 'planToNodes.order': 'ASC' })
+            .getMany();
+
+        for (const plan of plans) {
+            if (plan.planToNodes) {
+                plan.nodes = plan.planToNodes.map(planToNode => planToNode.node);
+            }
+        }
+
+        for (const plan of plans) {
+            if (!actionClients.has(plan.robot.number)) {
+                const actionClient = new ActionClient(
+                    process.env.ROS_URL || 'ws://localhost:9020',
+                    '/robot' + plan.robot.number + '/follow_waypoints',
+                    'nav2_msgs/FollowWaypoints',
+                    (response: any) => {
+                        this.responseCallback(plan.robot.number, response);
+                    },
+                    (feedback: any) => {
+                        this.feedbackCallback(plan.robot.number, feedback);
+                    },
+                    (result: any) => {
+                        this.resultCallback(plan.robot.number, result);
+                    },
+                );
+                await actionClient.open();
+                actionClients.set(plan.robot.number, actionClient);
+            }
+        }
+
+        for (const plan of plans) {
+            const actionClient = actionClients.get(plan.robot.number);
+            await actionClient?.cancel();
+        }
+
+        const date = Date.now();
+        const epsilon = 0.00001;
+
+        for (const plan of plans) {
+            if (plan.nodes) {
+                const poses = [];
+
+                let previousNode = await plan.robot.getPosition();
+                for (const node of plan.nodes) {
+
+                    const theta = Math.atan2(node.y - previousNode.y, node.x - previousNode.x);
+                    const quaterion = eulerToQuaternion(0, 0, theta);
+
+                    poses.push({
+                        header: {
+                            stamp: {
+                                sec: Math.floor(date / 1000),
+                                nanosec: date - Math.floor(date / 1000) * 1000,
+                            },
+                            frame_id: 'map',
+                        },
+                        pose: {
+                            position: {
+                                x: node.x + epsilon,
+                                y: node.y + epsilon,
+                                z: epsilon,
+                            },
+                            orientation: {
+                                x: quaterion[0] + epsilon,
+                                y: quaterion[1] + epsilon,
+                                z: quaterion[2] + epsilon,
+                                w: quaterion[3] + epsilon,
+                            },
+                        },
+                    });
+
+                    previousNode = node;
+                }
+
+                const msg = {
+                    poses: poses,
+                };
+
+                actionClients.get(plan.robot.number)?.call(msg);
+            }
+        }
+    }
+
+    static async checkGoal(robot: number, waypoint: number): Promise<void> {
+        const task = await Task.createQueryBuilder('task')
+            .innerJoinAndSelect('task.robot', 'robot')
+            .innerJoinAndSelect('task.taskToRooms', 'taskToRooms')
+            .innerJoinAndSelect('taskToRooms.room', 'room')
+            .innerJoinAndSelect('taskToRooms.task', '_')
+            .innerJoinAndSelect('room.node', 'node')
+            .where('task.status = :status', { status: TaskStatus.IN_EXECUTION })
+            .andWhere('robot.number = :robot', { robot: robot })
+            .andWhere('taskToRooms.completed = :completed', { completed: false })
+            .orderBy({ 'task.createdAt': 'ASC', 'taskToRooms.order': 'ASC' })
+            .getOne();
+
+        if (!task) {
+            return;
+        }
+
+        const plan = await Plan.createQueryBuilder('plan')
+            .innerJoinAndSelect('plan.robot', 'robot')
+            .innerJoinAndSelect('plan.planToNodes', 'planToNodes')
+            .innerJoinAndSelect('planToNodes.node', 'node')
+            .where('robot.number = :robot', { robot: robot })
+            .orderBy({ 'planToNodes.order': 'ASC' })
+            .getOneOrFail();
+
+        if (plan.planToNodes && task.taskToRooms) {
+            if (plan.planToNodes[waypoint].node.ID === task.taskToRooms[0].room.node.ID) {
+                await TaskToRoom.update(task.taskToRooms[0].ID, { completed: true });
+
+                if (task.taskToRooms.length === 1) {
+                    await Task.update(task.ID, { status: TaskStatus.COMPLETED });
+
+                    const newTask = await Task.createQueryBuilder('task')
+                        .innerJoinAndSelect('task.robot', 'robot')
+                        .where('task.status = :status', { status: TaskStatus.ASSIGNED })
+                        .andWhere('robot.number = :robot', { robot: robot })
+                        .orderBy({ 'task.createdAt': 'ASC' })
+                        .getOne();
+
+                    if (newTask) {
+                        await Task.update(newTask.ID, { status: TaskStatus.IN_EXECUTION });
+                    }
+                }
+            }
+        }
+    }
+
+    static async stopPlan(): Promise<void> {
+        for (const actionClient of actionClients) {
+            await actionClient[1].cancel();
+        }
+    }
+
+    static responseCallback(robot: number, response: any): void {
+        // eslint-disable-next-line no-console
+        console.log('Response callback from robot ' + robot + ' ' + JSON.stringify(response));
+    }
+
+    static feedbackCallback(robot: number, feedback: any): void {
+        if (currentWaypoints.get(robot) !== feedback.current_waypoint) {
+            // eslint-disable-next-line no-console
+            console.log('Robot ' + robot + ' is at waypoint ' + feedback.current_waypoint);
+
+            currentWaypoints.set(robot, feedback.current_waypoint);
+            if (feedback.current_waypoint > 0) {
+                this.checkGoal(robot, feedback.current_waypoint);
+            }
+        }
+    }
+
+    static resultCallback(robot: number, result: any): void {
+        if (result.missed_waypoints.length > 0) {
+            // eslint-disable-next-line no-console
+            console.log('Robot ' + robot + ' has missed waypoints ' + result.missed_waypoints);
+        } else {
+            // eslint-disable-next-line no-console
+            console.log('Robot ' + robot + ' has completed its plan');
         }
     }
 }
