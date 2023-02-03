@@ -43,16 +43,12 @@ export class Robot extends BaseEntity {
 
     async getPosition(): Promise<MapNode> {
         const nodes = await MapNode.createQueryBuilder('node')
-            .orderBy('node.value', 'ASC')
             .getMany();
-
-        const robotX = this.currentX | this.x;
-        const robotY = this.currentY | this.y;
 
         let minDistance = Infinity;
         let nearestNode = null;
         for (const node of nodes) {
-            const distance = euclideanDistance(node.x, node.y, robotX, robotY);
+            const distance = euclideanDistance(node.x, node.y, this.currentX, this.currentY);
             if (distance < minDistance) {
                 minDistance = distance;
                 nearestNode = node;
