@@ -245,7 +245,7 @@ export class MapController {
                 }
 
                 for (const plan of plans) {
-                    if (plan.nodes) {
+                    if (plan.nodes && plan.robot) {
                         const points = plan.nodes.map(node => node.x / meterPerPixel + ',' + (height - node.y / meterPerPixel));
                         polylines.push({
                             '@points': points.join(' '),
