@@ -41,7 +41,7 @@ amcl:
     set_initial_pose: True
     initial_pose:
       x: 120.0
-      y: 7.0
+      y: 6.0
       z: 0.0
       yaw: 0.0
 
@@ -135,7 +135,14 @@ controller_server:
       stateful: True
     # DWB parameters
     FollowPath:
-      plugin: "dwb_core::DWBLocalPlanner"
+      plugin: "nav2_rotation_shim_controller::RotationShimController"
+      angular_dist_threshold: 0.3925
+      forward_sampling_distance: 0.5
+      rotate_to_heading_angular_vel: 1.8
+      max_angular_accel: 3.2
+      simulate_ahead_time: 1.0
+
+      primary_controller: "dwb_core::DWBLocalPlanner"
       debug_trajectory_details: True
       min_vel_x: 0.0
       min_vel_y: 0.0
@@ -173,58 +180,64 @@ controller_server:
       RotateToGoal.slowing_factor: 5.0
       RotateToGoal.lookahead_time: -1.0
 
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      footprint_padding: 0.03
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: base_link
+      use_sim_time: True
+      robot_radius: 0.22
+      resolution: 0.05
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
+        footprint_clearing_enabled: true
+        max_obstacle_height: 2.0
+        combination_method: 1
+        scan:
+          topic: /robot1/scan
+          obstacle_max_range: 2.5
+          obstacle_min_range: 0.0
+          raytrace_max_range: 3.0
+          raytrace_min_range: 0.0
+          max_obstacle_height: 2.0
+          min_obstacle_height: 0.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          inf_is_valid: false
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: True
+        enabled: true
+        subscribe_to_updates: true
+        transform_tolerance: 0.1
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        enabled: true
+        inflation_radius: 0.35
+        cost_scaling_factor: 1.0
+        inflate_unknown: false
+        inflate_around_unknown: true
+      always_send_full_costmap: True
+
 local_costmap:
   local_costmap:
     ros__parameters:
-      use_sim_time: True
+      update_frequency: 5.0
+      publish_frequency: 2.0
       global_frame: odom
+      robot_base_frame: base_link
+      use_sim_time: True
       rolling_window: true
       width: 3
       height: 3
       resolution: 0.05
-      robot_radius: 0.22
-      plugins: ["obstacle_layer", "inflation_layer"]
-      inflation_layer:
-        plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.55
-      obstacle_layer:
-        plugin: "nav2_costmap_2d::ObstacleLayer"
-        enabled: True
-        scan:
-          topic: /robot1/scan
-          max_obstacle_height: 2.0
-          clearing: True
-          marking: True
-          raytrace_max_range: 3.0
-          raytrace_min_range: 0.0
-          obstacle_max_range: 2.5
-          obstacle_min_range: 0.0
-      static_layer:
-        map_subscribe_transient_local: True
-      always_send_full_costmap: True
-      observation_sources: scan
-
-global_costmap:
-  global_costmap:
-    ros__parameters:
-      use_sim_time: True
-      robot_radius: 0.22
-      obstacle_layer:
-        enabled: True
-        scan:
-          topic: /robot1/scan
-          max_obstacle_height: 2.0
-          clearing: True
-          marking: True
-          raytrace_max_range: 3.0
-          raytrace_min_range: 0.0
-          obstacle_max_range: 2.5
-          obstacle_min_range: 0.0
-      static_layer:
-        map_subscribe_transient_local: True
-      always_send_full_costmap: True
-      observation_sources: scan
 
 map_server:
   ros__parameters:
@@ -280,5 +293,5 @@ waypoint_follower:
     waypoint_task_executor_plugin: "wait_at_waypoint"
     wait_at_waypoint:
       plugin: "nav2_waypoint_follower::WaitAtWaypoint"
-      enabled: True
+      enabled: False
       waypoint_pause_duration: 200

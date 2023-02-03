@@ -34,9 +34,9 @@ $ sudo apt install python3-colcon-common-extensions
 Install necessary packages:
 
 ```bash
-sudo apt install ros-humble-navigation2 ros-humble-nav2-bringup
-sudo apt install ros-humble-turtlebot3*
-pip3 install ros2bridge
+$ sudo apt install ros-humble-navigation2 ros-humble-nav2-bringup
+$ sudo apt install ros-humble-turtlebot3*
+$ pip3 install ros2bridge
 ```
 
 Automatically source ROS 2 in your bashrc:
