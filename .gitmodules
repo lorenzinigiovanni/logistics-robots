@@ -1,3 +1,6 @@
 [submodule "API/src/maof"]
 	path = API/src/maof
 	url = https://bitbucket.org/lorenzinigiovanni/maof
+[submodule "ros2bridge"]
+	path = ros2bridge
+	url = https://github.com/diegoplanchenstainer/ros2bridge.git

@@ -36,7 +36,6 @@ Install necessary packages:
 ```bash
 $ sudo apt install ros-humble-navigation2 ros-humble-nav2-bringup
 $ sudo apt install ros-humble-turtlebot3*
-$ pip3 install ros2bridge
 ```
 
 Automatically source ROS 2 in your bashrc:
@@ -53,6 +52,20 @@ Compile the project:
 ```bash
 $ cd logistics-robots/ros2_ws
 $ colcon build
+```
+
+### ros2bridge
+
+Install python packages:
+
+```bash
+$ sudo apt install python3-pip
+$ sudo apt install python3-venv
+$ cd logistics-robots/ros2bridge
+$ python3 -m venv venv
+$ source venv/bin/activate
+$ pip install numpy
+$ pip install .
 ```
 
 ### PostgreSQL database
@@ -181,8 +194,8 @@ $ ros2 launch turtlebot3_nav multi_tb3_simulation_launch.py
 Start ros2bridge:
 
 ```bash
-$ cd logistics-robots/ros2_ws
-$ source install/setup.bash
+$ cd logistics-robots/ros2bridge
+$ source venv/bin/activate
 $ python3 -m ros2bridge -n
 ```
 
