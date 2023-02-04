@@ -8,8 +8,12 @@ import { Room } from 'app/entities/map/room.entity';
 	providedIn: 'root',
 })
 export class MapService extends ApiService {
-	getMap(): Observable<string> {
-		return this.getString(`/map/svg`);
+	getSvgMap(): Observable<string> {
+		return this.getString(`/map/svgmap`);
+	}
+
+	getSvgRobots(): Observable<string> {
+		return this.getString(`/map/svgrobots`);
 	}
 
 	getRooms(): Observable<Room[]> {

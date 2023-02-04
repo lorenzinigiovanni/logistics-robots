@@ -172,7 +172,7 @@ export class MapController {
                 res.status(200).send();
             });
 
-        app.route('/map/svg')
+        app.route('/map/svgmap')
             .get(async (req, res) => {
                 const [settings] = await Settings.find();
 
@@ -228,7 +228,54 @@ export class MapController {
                     });
                 }
 
+                mapSvg.svg.polyline = polylines;
+
+                const builder = new XMLBuilder({
+                    ignoreAttributes: false,
+                    attributeNamePrefix: '@',
+                });
+
+                const svg = builder.build(mapSvg);
+
+                res.status(200).send(svg);
+            });
+
+        app.route('/map/svgrobots')
+            .get(async (req, res) => {
+                const [settings] = await Settings.find();
+
+                if (settings == null) {
+                    res.status(500).send();
+                    return;
+                }
+
+                const meterPerPixel = settings.meterPerPixel;
+
+                const [map] = await Map.find();
+
+                if (map == null) {
+                    res.status(500).send();
+                    return;
+                }
+
+                const parser = new XMLParser({
+                    ignoreAttributes: false,
+                    attributeNamePrefix: '@',
+                });
+
+                const mapSvg = parser.parse(map.svg);
+
+                const width = mapSvg.svg['@width'];
+                const height = mapSvg.svg['@height'];
+
+                const robotSvg: any = {};
+                robotSvg.svg = {};
+                robotSvg.svg['@xmlns'] = 'http://www.w3.org/2000/svg';
+                robotSvg.svg['@viewBox'] = `0 0 ${width} ${height}`;
+
                 // plans
+
+                const polylines = [];
 
                 const plans = await Plan.createQueryBuilder('plan')
                     .leftJoinAndSelect('plan.robot', 'robot')
@@ -256,7 +303,7 @@ export class MapController {
                     }
                 }
 
-                mapSvg.svg.polyline = polylines;
+                robotSvg.svg.polyline = polylines;
 
                 // robots
 
@@ -311,14 +358,14 @@ export class MapController {
                     });
                 }
 
-                mapSvg.svg.svg = icons;
+                robotSvg.svg.svg = icons;
 
                 const builder = new XMLBuilder({
                     ignoreAttributes: false,
                     attributeNamePrefix: '@',
                 });
 
-                const svg = builder.build(mapSvg);
+                const svg = builder.build(robotSvg);
 
                 res.status(200).send(svg);
             });
