@@ -9,11 +9,11 @@ export class SettingsController {
 
         app.route('/settings')
             .get(async (req, res) => {
-                const [settings] = await Settings.find();
+                let [settings] = await Settings.find();
 
                 if (settings == null) {
-                    res.status(404).send();
-                    return;
+                    settings = new Settings();
+                    settings.save();
                 }
 
                 res.status(200).send(settings);
