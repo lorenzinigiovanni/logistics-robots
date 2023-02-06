@@ -109,12 +109,14 @@ export class DashboardComponent implements OnInit {
 
     const names = [];
     const completed = [];
+    const cancelled = [];
     const inExecution = [];
     const assigned = [];
 
     for (const stat of this.robotsStatistics) {
       names.push(stat.name);
       completed.push(+stat.nCompletedTasks);
+      cancelled.push(+stat.nCancelledTasks);
       inExecution.push(+stat.nInExecutionTasks);
       assigned.push(+stat.nAssignedTasks);
     }
@@ -155,6 +157,15 @@ export class DashboardComponent implements OnInit {
           stack: 'x',
           itemStyle: {
             color: '#28a745',
+          },
+        },
+        {
+          name: "Cancelled",
+          data: cancelled,
+          type: 'bar',
+          stack: 'x',
+          itemStyle: {
+            color: '#dc3545',
           },
         },
         {
@@ -285,6 +296,10 @@ export class DashboardComponent implements OnInit {
 
   async plannersPeriodChange() {
     await this.plannersGraphInit();
+  }
+
+  async onRefresh() {
+    await this.ngOnInit();
   }
 
 }

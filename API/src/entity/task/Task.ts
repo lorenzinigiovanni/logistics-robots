@@ -8,6 +8,7 @@ export enum TaskStatus {
     ASSIGNED = 'assigned',
     IN_EXECUTION = 'in_execution',
     COMPLETED = 'completed',
+    CANCELLED = 'cancelled',
 }
 
 @Entity()

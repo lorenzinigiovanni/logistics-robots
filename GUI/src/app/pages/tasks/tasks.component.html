@@ -2,6 +2,11 @@
   <nb-card-header>
     <div class="row">
       <div class="col-6">Tasks</div>
+      <div class="col-6 text-right">
+        <button nbButton status="primary" (click)="onRefresh()">
+          <nb-icon icon="refresh-outline"></nb-icon>
+        </button>
+      </div>
     </div>
   </nb-card-header>
   <nb-card-body>
@@ -12,6 +17,7 @@
           <th class="text-center">Progress</th>
           <th class="text-center">Robot</th>
           <th class="text-center">Goal set</th>
+          <th class="text-center">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -24,6 +30,12 @@
           <td class="align-middle text-center">{{task.robot?.name ? task.robot.name : 'None'}}</td>
           <td class="align-middle text-center">
             <div *ngFor="let goal of task.goals">{{goal.name}}</div>
+          </td>
+          <td class="align-middle text-center">
+            <button nbButton ghost status="danger" (click)="onCancel(task.ID)"
+              *ngIf="task.status != 'completed' && task.status != 'cancelled'">
+              <nb-icon icon="slash-outline"></nb-icon>
+            </button>
           </td>
         </tr>
       </tbody>

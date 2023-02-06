@@ -174,6 +174,25 @@ export class TaskController {
 
                 res.status(200).send();
             });
+
+        app.route('/tasks/:ID/cancel')
+            .post(async (req, res) => {
+                const task = await Task.findOne({ where: { ID: req.params.ID } });
+
+                if (task == null) {
+                    res.status(404).send();
+                    return;
+                }
+
+                task.status = TaskStatus.CANCELLED;
+                await task.save();
+
+                await this.stopPlan();
+                await this.computePlan();
+                await this.executePlan();
+
+                res.status(200).send();
+            });
     }
 
     static async computePlan(): Promise<void> {
@@ -327,6 +346,7 @@ export class TaskController {
             .innerJoinAndSelect('taskToRooms.room', 'room')
             .innerJoinAndSelect('room.node', 'node')
             .where('taskToRooms.completed = :completed', { completed: false })
+            .andWhere('task.status != :status', { status: TaskStatus.CANCELLED })
             .orderBy({ 'robot.ID': 'ASC', 'task.createdAt': 'ASC', 'taskToRooms.order': 'ASC' })
             .distinctOn(['robot.ID'])
             .getMany();

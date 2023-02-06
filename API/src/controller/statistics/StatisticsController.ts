@@ -88,6 +88,7 @@ export class StatisticsController {
                     .addSelect('COUNT(case task.status when \'completed\' then 1 else null end)', 'nCompletedTasks')
                     .addSelect('COUNT(case task.status when \'in_execution\' then 1 else null end)', 'nInExecutionTasks')
                     .addSelect('COUNT(case task.status when \'assigned\' then 1 else null end)', 'nAssignedTasks')
+                    .addSelect('COUNT(case task.status when \'cancelled\' then 1 else null end)', 'nCancelledTasks')
 
                     .orderBy('robot.number')
                     .groupBy('robot.number')

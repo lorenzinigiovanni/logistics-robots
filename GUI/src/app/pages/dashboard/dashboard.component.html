@@ -3,7 +3,14 @@
 
     <nb-card accent="primary">
       <nb-card-header>
-        Dashboard
+        <div class="row">
+          <div class="col-6">Dashboard</div>
+          <div class="col-6 text-right">
+            <button nbButton status="primary" (click)="onRefresh()">
+              <nb-icon icon="refresh-outline"></nb-icon>
+            </button>
+          </div>
+        </div>
       </nb-card-header>
       <nb-card-body>
         <div class="container text-center">
