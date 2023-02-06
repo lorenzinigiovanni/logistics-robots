@@ -114,4 +114,13 @@ export class SettingsComponent implements OnInit {
     );
   }
 
+  async resetSettings() {
+    await this.settingsService.resetSettings().toPromise();
+    this.ngOnInit();
+  }
+
+  async eraseTasksPlans() {
+    await this.settingsService.eraseTasksPlans().toPromise();
+  }
+
 }

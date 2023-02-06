@@ -18,4 +18,12 @@ export class SettingsService extends ApiService {
 	uploadMap(file: File): Observable<any> {
 		return this.uploadFile(`/map`, file);
 	}
+
+	resetSettings(): Observable<object> {
+		return this.postRaw(`/settings/resetsettings`, {});
+	}
+
+	eraseTasksPlans(): Observable<object> {
+		return this.postRaw(`/settings/erasetasksplans`, {});
+	}
 }
