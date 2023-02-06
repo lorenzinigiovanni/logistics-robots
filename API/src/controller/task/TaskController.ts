@@ -293,13 +293,13 @@ export class TaskController {
         await fs.unlink(inputFilePath);
         await fs.unlink(outputFilePath);
 
-        await Plan.delete({});
-
         for (const robot of outputJson.agents) {
             const robotEntity = await Robot.findOneOrFail({ where: { number: robot.ID + 1 } });
 
             const plan = new Plan();
+            plan.MAPFalgorithm = settings.MAPFalgorithm;
             await plan.save();
+
             robotEntity.plan = plan;
 
             for (const [order, node] of robot.plan.entries()) {

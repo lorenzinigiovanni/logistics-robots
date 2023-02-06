@@ -1,6 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "skipLibCheck": true,
     "importHelpers": true,
     "module": "es2020",
     "outDir": "./dist/out-tsc",

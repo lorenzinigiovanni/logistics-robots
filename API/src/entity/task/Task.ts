@@ -22,12 +22,12 @@ export class Task extends BaseEntity {
     @OneToMany(() => TaskToRoom, taskToRooms => taskToRooms.task, { onDelete: 'CASCADE' })
     public taskToRooms?: TaskToRoom[];
 
-    @CreateDateColumn()
-    public createdAt!: Date;
-
     public goals?: Room[];
 
     public completedGoals?: Room[];
+
+    @CreateDateColumn()
+    public createdAt!: Date;
 
     @Column({
         type: 'enum',
@@ -35,4 +35,5 @@ export class Task extends BaseEntity {
         default: TaskStatus.NOT_ASSIGNED,
     })
     public status!: TaskStatus;
+
 }

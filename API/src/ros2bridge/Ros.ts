@@ -16,12 +16,16 @@ export class Ros extends EventEmitter {
     }
 
     async open(): Promise<void> {
-        this.ws = new WebSocket(this.url);
+        try {
+            this.ws = new WebSocket(this.url);
 
-        this.ws.on('close', this.onClose);
-        this.ws.on('message', this.onMessage);
+            this.ws.on('close', this.onClose);
+            this.ws.on('message', this.onMessage);
 
-        await once(this.ws, 'open');
+            await once(this.ws, 'open');
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     close(): void {

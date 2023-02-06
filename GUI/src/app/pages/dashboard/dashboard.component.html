@@ -1,8 +1,106 @@
-<nb-card accent="primary">
-  <nb-card-header>
-    Dashboard
-  </nb-card-header>
-  <nb-card-body>
-    
-  </nb-card-body>
-</nb-card>
+<div class="row">
+  <div class="col-xl-6 col-lg-12">
+
+    <nb-card accent="primary">
+      <nb-card-header>
+        Dashboard
+      </nb-card-header>
+      <nb-card-body>
+        <div class="container text-center">
+          <div class="row">
+            <div class="col-sm">
+              <div class="h1">{{ statistics['nRobots'] }}</div>
+              <div class="subtitle">robots</div>
+            </div>
+            <div class="col-sm">
+              <div class="h1">{{ statistics['nTasks'] }}</div>
+              <div class="subtitle">tasks</div>
+            </div>
+            <div class="col-sm">
+              <div class="h1">{{ statistics['nGoals'] }}</div>
+              <div class="subtitle">goals</div>
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card accent="primary">
+      <nb-card-header>
+        <div class="row">
+          <div class="col">Tasks</div>
+          <div class="col text-right">
+            <nb-select [(selected)]="tasksPeriod" (selectedChange)="tasksPeriodChange()">
+              <nb-option value="day">Day</nb-option>
+              <nb-option value="month">Month</nb-option>
+              <nb-option value="year">Year</nb-option>
+            </nb-select>
+          </div>
+        </div>
+      </nb-card-header>
+      <nb-card-body>
+        <div echarts [options]="tasksGraphOptions"></div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card accent="primary">
+      <nb-card-header>
+        <div class="row">
+          <div class="col">Planners</div>
+          <div class="col text-right">
+            <nb-select [(selected)]="plannersPeriod" (selectedChange)="plannersPeriodChange()">
+              <nb-option value="day">Day</nb-option>
+              <nb-option value="month">Month</nb-option>
+              <nb-option value="year">Year</nb-option>
+            </nb-select>
+          </div>
+        </div>
+      </nb-card-header>
+      <nb-card-body>
+        <div echarts [options]="plannersGraphOptions"></div>
+      </nb-card-body>
+    </nb-card>
+
+  </div>
+  <div class="col-xl-6 col-lg-12">
+
+    <nb-card accent="primary">
+      <nb-card-header>
+        <div class="row">
+          <div class="col">Robots</div>
+          <div class="col text-right">
+            <nb-select [(selected)]="robotsPeriod" (selectedChange)="robotsPeriodChange()">
+              <nb-option value="day">Day</nb-option>
+              <nb-option value="week">Week</nb-option>
+              <nb-option value="month">Month</nb-option>
+              <nb-option value="year">Year</nb-option>
+            </nb-select>
+          </div>
+        </div>
+      </nb-card-header>
+      <nb-card-body>
+        <div echarts [options]="robotsGraphOptions"></div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card accent="primary">
+      <nb-card-header>
+        <div class="row">
+          <div class="col">Plans length</div>
+          <div class="col text-right">
+            <nb-select [(selected)]="plansPeriod" (selectedChange)="plansPeriodChange()">
+              <nb-option value="day">Day</nb-option>
+              <nb-option value="week">Week</nb-option>
+              <nb-option value="month">Month</nb-option>
+              <nb-option value="year">Year</nb-option>
+            </nb-select>
+          </div>
+        </div>
+      </nb-card-header>
+      <nb-card-body>
+        <div echarts [options]="plansGraphOptions"></div>
+      </nb-card-body>
+    </nb-card>
+
+  </div>
+</div>

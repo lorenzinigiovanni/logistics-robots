@@ -79,17 +79,19 @@ export class RobotsController {
                     '/robot' + robot.number + '/amcl_pose',
                     'geometry_msgs/PoseWithCovarianceStamped',
                     (msg) => {
-                        const x = msg.pose.pose.position.x;
-                        const y = msg.pose.pose.position.y;
+                        if (msg.pose) {
+                            const x = msg.pose.pose.position.x;
+                            const y = msg.pose.pose.position.y;
 
-                        const ox = msg.pose.pose.orientation.x;
-                        const oy = msg.pose.pose.orientation.y;
-                        const oz = msg.pose.pose.orientation.z;
-                        const ow = msg.pose.pose.orientation.w;
+                            const ox = msg.pose.pose.orientation.x;
+                            const oy = msg.pose.pose.orientation.y;
+                            const oz = msg.pose.pose.orientation.z;
+                            const ow = msg.pose.pose.orientation.w;
 
-                        const euler = quaternionToEuler(ox, oy, oz, ow);
+                            const euler = quaternionToEuler(ox, oy, oz, ow);
 
-                        Robot.update(robot.ID, { currentX: x, currentY: y, currentTheta: euler[2] });
+                            Robot.update(robot.ID, { currentX: x, currentY: y, currentTheta: euler[2] });
+                        }
                     },
                 );
 

@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
 import {
-  NbCardModule,
+  NbCardModule, NbProgressBarModule, NbSelectModule,
 } from '@nebular/theme';
+import { NgxEchartsModule } from 'ngx-echarts';
 import { ThemeModule } from '../../@theme/theme.module';
 
 import { DashboardRoutingModule, routedComponents } from './dashboard-routing.module';
@@ -11,6 +12,9 @@ import { DashboardRoutingModule, routedComponents } from './dashboard-routing.mo
     NbCardModule,
     ThemeModule,
     DashboardRoutingModule,
+    NbProgressBarModule,
+    NbSelectModule,
+    NgxEchartsModule,
   ],
   declarations: [
     ...routedComponents,

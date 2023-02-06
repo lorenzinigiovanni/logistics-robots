@@ -29,6 +29,8 @@
     "bootstrap": "^4.6.0",
     "class-transformer": "^0.5.1",
     "core-js": "^3.27.2",
+    "echarts": "^5.4.1",
+    "ngx-echarts": "^15.0.1",
     "normalize.css": "^8.0.1",
     "pace-js": "^1.2.4",
     "reflect-metadata": "^0.1.13",

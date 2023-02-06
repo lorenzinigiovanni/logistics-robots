@@ -278,9 +278,9 @@ export class MapController {
                 const polylines = [];
 
                 const plans = await Plan.createQueryBuilder('plan')
-                    .leftJoinAndSelect('plan.robot', 'robot')
-                    .leftJoinAndSelect('plan.planToNodes', 'planToNodes')
-                    .leftJoinAndSelect('planToNodes.node', 'node')
+                    .innerJoinAndSelect('plan.robot', 'robot')
+                    .innerJoinAndSelect('plan.planToNodes', 'planToNodes')
+                    .innerJoinAndSelect('planToNodes.node', 'node')
                     .orderBy({ 'planToNodes.order': 'ASC' })
                     .getMany();
 

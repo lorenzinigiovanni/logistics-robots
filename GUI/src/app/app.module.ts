@@ -26,6 +26,7 @@ import { AdminGuard } from './services/admin-guard.service';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { TokenInterceptor } from './auth/token.interceptor';
 import { JwtInterceptor } from './auth/jwt.interceptor';
+import { NgxEchartsModule } from 'ngx-echarts';
 
 @NgModule({
   declarations: [
@@ -46,6 +47,9 @@ import { JwtInterceptor } from './auth/jwt.interceptor';
     ThemeModule.forRoot(),
     NbEvaIconsModule,
     NbIconModule,
+    NgxEchartsModule.forRoot({
+      echarts: () => import('echarts'),
+    }),
   ],
   providers: [
     AuthGuard,
