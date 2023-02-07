@@ -25,7 +25,7 @@
           <td class="align-middle">{{task.status | lrEnum}}</td>
           <td class="align-middle">
             <nb-progress-bar value="{{100 * task.completedGoals.length / task.goals.length}}"
-              status="{{task.completedGoals.length === task.goals.length ? 'success' : 'primary'}}"></nb-progress-bar>
+              status="{{task.status === 'completed' ? 'success' : task.status === 'cancelled' ? 'danger' : 'primary'}}"></nb-progress-bar>
           </td>
           <td class="align-middle text-center">{{task.robot?.name ? task.robot.name : 'None'}}</td>
           <td class="align-middle text-center">
