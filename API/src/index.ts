@@ -11,6 +11,7 @@ import { MapController } from './controller/map/MapController';
 import { SettingsController } from './controller/settings/SettingsController';
 import { RobotsController } from './controller/robots/RobotsController';
 import { TaskController } from './controller/task/TaskController';
+import { StatisticsController } from './controller/statistics/StatisticsController';
 
 export class Main {
     static start(): void {
@@ -55,6 +56,9 @@ export class Main {
                 SettingsController.route(app);
                 RobotsController.route(app);
                 TaskController.route(app);
+                StatisticsController.route(app);
+
+                await RobotsController.subscribeToRobotPosition();
 
                 app.listen(3000);
                 // eslint-disable-next-line no-console

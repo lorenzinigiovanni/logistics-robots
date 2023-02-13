@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, OneToMany, OneToOne } from 'typeorm';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, OneToMany, OneToOne, CreateDateColumn, Column } from 'typeorm';
 
 import { MapNode } from '../map/MapNode';
 import { Robot } from '../robot/Robot';
@@ -11,12 +11,18 @@ export class Plan extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     ID!: string;
 
-    @OneToOne(() => Robot, robot => robot.plan, { onDelete: 'CASCADE' })
+    @OneToOne(() => Robot, robot => robot.plan)
     robot!: Robot;
 
     @OneToMany(() => PlanToNode, planToNodes => planToNodes.plan, { onDelete: 'CASCADE' })
     public planToNodes?: PlanToNode[];
 
     public nodes?: MapNode[];
+
+    @CreateDateColumn()
+    public createdAt!: Date;
+
+    @Column()
+    public MAPFalgorithm!: string;
 
 }

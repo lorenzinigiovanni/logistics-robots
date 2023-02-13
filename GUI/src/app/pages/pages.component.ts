@@ -29,14 +29,14 @@ export class PagesComponent {
             home: true,
           },
           {
-            title: 'Tasks',
-            icon: 'list-outline',
-            link: '/pages/tasks',
-          },
-          {
             title: 'Map',
             icon: 'map-outline',
             link: '/pages/map',
+          },
+          {
+            title: 'Tasks',
+            icon: 'list-outline',
+            link: '/pages/tasks',
           },
           {
             title: 'Robots',

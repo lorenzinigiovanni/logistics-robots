@@ -3,7 +3,7 @@
         {
             "name": "robot1",
             "x_pose": 120.0,
-            "y_pose": 7.0,
+            "y_pose": 6.0,
             "z_pose": 0.01,
             "roll": 0.0,
             "pitch": 0.0,

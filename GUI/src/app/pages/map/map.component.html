@@ -4,8 +4,11 @@
   </nb-card-header>
   <nb-card-body>
     <nb-alert outline="warning">Right click to change room name</nb-alert>
-    <div #map (click)="onClick($event)" (mousemove)="onMouseMove($event)" (mouseleave)="onMouseLeave()"
-      (contextmenu)="onRightClick($event)"></div>
+    <div class="mapcontainer">
+      <div class="map" #map (click)="onClick($event)" (mousemove)="onMouseMove($event)" (mouseleave)="onMouseLeave()"
+        (contextmenu)="onRightClick($event)"></div>
+      <div class="robots" #robots></div>
+    </div>
   </nb-card-body>
 </nb-card>
 

@@ -18,9 +18,9 @@
   }
 }
 
-.table-hover > tbody > tr {
+.table-hover>tbody>tr {
   cursor: pointer;
-} 
+}
 
 a:link {
   text-decoration: none !important;
@@ -52,5 +52,18 @@ svg>polyline.selected {
 }
 
 nb-tooltip {
+  pointer-events: none;
+}
+
+.mapcontainer {
+  position: relative;
+}
+
+.mapcontainer>.robots {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
   pointer-events: none;
 }

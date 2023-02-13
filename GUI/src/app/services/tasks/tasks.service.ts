@@ -28,4 +28,8 @@ export class TasksService extends ApiService {
     return this.deleteOne(Task, `/tasks/${ID}`);
   }
 
+  cancelTask(ID: string): Observable<object> {
+    return this.postRaw(`/tasks/${ID}/cancel`, {});
+  }
+
 }

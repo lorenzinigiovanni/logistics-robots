@@ -6,28 +6,28 @@ export class Settings extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     ID!: string;
 
-    @Column()
-    MAPFalgorithm!: string;
+    @Column('varchar')
+    MAPFalgorithm = 'A*';
 
-    @Column()
-    SAPFalgorithm!: string;
+    @Column('varchar')
+    SAPFalgorithm = 'A*';
 
-    @Column()
-    costFunction!: string;
+    @Column('varchar')
+    costFunction = 'SIC';
 
-    @Column({ nullable: true })
-    heuristic!: string;
-
-    @Column('float')
-    robotRadius!: number;
+    @Column('varchar', { nullable: true })
+    heuristic = 'MANHATTAN';
 
     @Column('float')
-    discretizationDistance!: number;
+    robotRadius = 0.2;
 
     @Column('float')
-    doorSize!: number;
+    discretizationDistance = 1.3;
 
     @Column('float')
-    meterPerPixel!: number;
+    doorSize = 1.2;
+
+    @Column('float')
+    meterPerPixel = 0.0254;
 
 }

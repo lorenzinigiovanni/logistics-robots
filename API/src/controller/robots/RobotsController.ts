@@ -1,6 +1,10 @@
 import express from 'express';
 
 import { Robot } from '../../entity/robot/Robot';
+import { TopicSubscriber } from '../../ros2bridge/TopicSubscriber';
+import { quaternionToEuler } from '../../tools/quaternion';
+
+const positionTopicSubscribers = new Map<number, TopicSubscriber>();
 
 export class RobotsController {
 
@@ -19,6 +23,8 @@ export class RobotsController {
                 const robot = Robot.create(req.body as Object);
 
                 await robot.save();
+
+                await this.subscribeToRobotPosition();
 
                 res.status(200).send();
             });
@@ -59,6 +65,42 @@ export class RobotsController {
                 res.status(200).send();
             });
 
+    }
+
+    static async subscribeToRobotPosition(): Promise<void> {
+        const robots = await Robot.createQueryBuilder('robot')
+            .orderBy('robot.number', 'ASC')
+            .getMany();
+
+        for (const robot of robots) {
+            if (!positionTopicSubscribers.has(robot.number)) {
+                const topicSubscriber = new TopicSubscriber(
+                    process.env.ROS_URL || 'ws://localhost:9020',
+                    '/robot' + robot.number + '/amcl_pose',
+                    'geometry_msgs/PoseWithCovarianceStamped',
+                    (msg) => {
+                        if (msg.pose) {
+                            const x = msg.pose.pose.position.x;
+                            const y = msg.pose.pose.position.y;
+
+                            const ox = msg.pose.pose.orientation.x;
+                            const oy = msg.pose.pose.orientation.y;
+                            const oz = msg.pose.pose.orientation.z;
+                            const ow = msg.pose.pose.orientation.w;
+
+                            const euler = quaternionToEuler(ox, oy, oz, ow);
+
+                            Robot.update(robot.ID, { currentX: x, currentY: y, currentTheta: euler[2] });
+                        }
+                    },
+                );
+
+                await topicSubscriber.open();
+                topicSubscriber.subscribe();
+
+                positionTopicSubscribers.set(robot.number, topicSubscriber);
+            }
+        }
     }
 
 }

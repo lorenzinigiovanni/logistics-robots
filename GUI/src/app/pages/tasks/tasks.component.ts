@@ -23,4 +23,14 @@ export class TasksComponent implements OnInit {
     this.tasks = this.tasksService.getTasks();
   }
 
+  async onCancel(ID: string) {
+    console.log(ID);
+    await this.tasksService.cancelTask(ID).toPromise();
+    this.ngOnInit();
+  }
+
+  async onRefresh() {
+    this.ngOnInit();
+  }
+
 }

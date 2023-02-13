@@ -15,6 +15,7 @@ export class MapComponent implements OnInit {
   @ViewChild('dialogRoomName') dialogRoomName: TemplateRef<any>;
 
   @ViewChild('map') map;
+  @ViewChild('robots') robots;
 
   @ViewChild('tooltip') tooltipHtml;
   @ViewChild(NbTooltipDirective) tooltip: NbTooltipDirective;
@@ -43,12 +44,19 @@ export class MapComponent implements OnInit {
 
   async ngOnInit() {
     await this.loadMap();
+    await this.loadRobots();
     this.rooms = await this.mapService.getRooms().toPromise();
   }
 
   async loadMap(): Promise<void> {
-    const svg = await this.mapService.getMap().toPromise();
+    const svg = await this.mapService.getSvgMap().toPromise();
     this.map.nativeElement.innerHTML = svg;
+  }
+
+  async loadRobots(): Promise<void> {
+    const svg = await this.mapService.getSvgRobots().toPromise();
+    this.robots.nativeElement.innerHTML = svg;
+    setTimeout(() => { this.loadRobots() }, 200)
   }
 
   onClick(e): void {
