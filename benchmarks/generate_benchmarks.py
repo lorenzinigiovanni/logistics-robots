@@ -4,7 +4,7 @@ import random
 
 
 def main():
-    print("Sto(ng) generannn i benchmark...")
+    print("Generating benchmarks...")
 
     n_benchmark = 5
     n_robot_list = [1, 2, 5]
