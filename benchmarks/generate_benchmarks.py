@@ -6,9 +6,12 @@ import random
 def main():
     print("Generating benchmarks...")
 
-    n_benchmark = 5
+    n_benchmark = 20
     n_robot_list = [1, 2, 5]
-    n_goal_list = [2, 5]
+    n_goal_list = [1, 2, 5]
+
+    if not os.path.exists("input"):
+        os.mkdir("input")
 
     with open("template.json") as json_file:
         data = json.load(json_file)
@@ -36,8 +39,11 @@ def main():
                     benchmark["nGoals"] = n_goal
                     benchmark["agents"] = json_agents
 
-                    with open(os.path.join("input", f"benchmark_r{n_robot}_g{n_goal}_{n}.json"), "w", encoding="utf-8") as f:
-                        json.dump(benchmark, f, ensure_ascii=False, indent=4)
+                    filename = os.path.join("input", f"benchmark_r{n_robot}_g{n_goal}_{n}.json")
+
+                    if(not os.path.isfile(filename)):
+                        with open(filename, "w", encoding="utf-8") as f:
+                            json.dump(benchmark, f, ensure_ascii=False, indent=4)
 
 
 if __name__ == "__main__":

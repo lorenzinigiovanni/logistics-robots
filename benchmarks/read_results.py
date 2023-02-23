@@ -1,24 +1,6 @@
 import os
 import json
 
-# example of result
-# {
-#     "timedout": false,
-#     "solution_found": "1",
-#     "time": "1917",
-#     "conflicts": "0",
-#     "path_length": "152",
-#     "largest_group": "2",
-#     "nRobots": "2",
-#     "nGoals": "2",
-#     "test": "1",
-#     "filename": "benchmark_r2_g2_1.json",
-#     "MAPF": "A*+OD+ID",
-#     "CF": "SIC",
-#     "SAPF": "A*",
-#     "H": "MANHATTAN"
-# }
-
 times = [1, 10, 60]
 
 

@@ -42,10 +42,10 @@ def parse_output(output):
 
 
 def main():
-    print("Executing benchmarks...")
+    print("Executing custom benchmarks...")
 
-    input_directory = "input"
-    output_path = "output"
+    input_directory = "custom_input"
+    output_path = "custom_output"
     maof_exec_path = os.path.join(
         "..",
         "API",
@@ -64,10 +64,6 @@ def main():
         for filename in os.listdir(input_directory):
             inputFile = os.path.join(input_directory, filename)
 
-            r = re.compile(
-                r"benchmark_r(?P<nRobots>\d+)_g(?P<nGoals>\d+)_(?P<test>\d+).json")
-            m = r.match(filename)
-
             algo = algorithm
             subSolver = ""
 
@@ -75,7 +71,7 @@ def main():
                 subSolver = algorithm.split("+", 1)[1]
                 algo = "ICR"
 
-            results = m.groupdict()
+            results = {}
             results["filename"] = filename
             results["MAPF"] = algo
             results["CF"] = "SIC"
@@ -83,22 +79,11 @@ def main():
             results["H"] = "MANHATTAN"
             results["subSolver"] = subSolver
 
-            nRobots = results["nRobots"]
-            nGoals = results["nGoals"]
+            custom_test_path = os.path.join(output_path, filename.split(".")[0])
+            if not os.path.exists(custom_test_path):
+                os.mkdir(custom_test_path)
 
-            robot_path = os.path.join(output_path, f"r{nRobots}")
-            if not os.path.exists(robot_path):
-                os.mkdir(robot_path)
-
-            goal_path = os.path.join(robot_path, f"g{nGoals}")
-            if not os.path.exists(goal_path):
-                os.mkdir(goal_path)
-
-            algorithm_path = os.path.join(goal_path, algorithm)
-            if not os.path.exists(algorithm_path):
-                os.mkdir(algorithm_path)
-
-            outputFile = os.path.join(algorithm_path, filename)
+            outputFile = os.path.join(custom_test_path, f"{algorithm}.json")
 
             if (os.path.isfile(outputFile)):
                 continue
