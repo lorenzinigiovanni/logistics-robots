@@ -89,18 +89,33 @@ def main():
     # setting threshold of gray image
     _, threshold = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
 
+    if (debug):
+        tmp = cv2.rotate(threshold, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        cv2.imwrite('binary.png', tmp)
+
     # close operation to highlight the contours of the rooms
     k = int(np.round(doors_size * px_per_meter))
     closed = cv2.morphologyEx(threshold, cv2.MORPH_CLOSE, np.ones((k, k), np.uint8))
+
+    if (debug):
+        tmp = cv2.rotate(closed, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        cv2.imwrite('rooms.png', tmp)
 
     # dilate operation to inflate the walls to consider the robot as a point
     k = int(np.round(robot_radius * px_per_meter))
     walls = cv2.morphologyEx(threshold, cv2.MORPH_DILATE, np.ones((k, k), np.uint8))
 
+    if (debug): 
+        tmp = cv2.rotate(walls, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        cv2.imwrite('walls.png', tmp)
+
     # room contours
     contours, _ = cv2.findContours(closed, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     rooms = []
+
+    if (debug):
+        tmp = img.copy()
 
     i = 0
     for contour in contours:
@@ -118,15 +133,23 @@ def main():
             cx, cy = compute_center(approx[:, 0])
             if closed[round(cy), round(cx)] != 255:
                 if (debug):
-                    cv2.drawContours(img, [contour], 0, (0, 255, 0), 2)
+                    cv2.drawContours(tmp, [contour], 0, (0, 255, 0), 2)
                 rooms.append(approx)
         # corridor
         else:
             if (debug):
-                cv2.drawContours(img, [contour], 0, (0, 0, 255), 2)
+                cv2.drawContours(tmp, [contour], 0, (0, 0, 255), 2)
+
+    if (debug):
+        tmp = cv2.rotate(tmp, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        cv2.imwrite('output_rooms.png', tmp)
 
     # list of doors contours
     doors_img = cv2.subtract(closed, walls)
+
+    if (debug):
+        tmp = cv2.rotate(doors_img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        cv2.imwrite('doors.png', tmp)
 
     doors_contours, _ = cv2.findContours(doors_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -324,20 +347,26 @@ def main():
         rooms_dict[new_point] = nearest_room
 
     if (debug):
+        tmp = img.copy()
+        tmp = cv2.bitwise_not(tmp)
+
+        # print graph
+        for key, values in graph.vertices.items():
+            p1 = meter_2_pixel(key)
+            for value in values:
+                p2 = meter_2_pixel(value)
+                # edge
+                cv2.line(tmp, reverse(p1), reverse(p2), (100, 100, 100), 2)
+
         # print graph
         for key, values in graph.vertices.items():
             p1 = meter_2_pixel(key)
             # vertex
-            cv2.circle(img, reverse(p1), 1, (0, 0, 255), 3)
-
-            for value in values:
-                p2 = meter_2_pixel(value)
-                # edge
-                cv2.line(img, reverse(p1), reverse(p2), (255, 0, 255), 1)
+            cv2.circle(tmp, reverse(p1), 1, (100, 50, 50), 7)
 
         # write image
-        img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
-        cv2.imwrite('output.png', img)
+        tmp = cv2.rotate(tmp, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        cv2.imwrite('output_graph.png', tmp)
 
     json_graph = []
     json_rooms = []
