@@ -11,14 +11,25 @@
           <label class="label">MAPF Algorithm type</label>
           <nb-select fullWidth name="inputMAPFAlgorithm" formControlName="MAPFalgorithm"
             [status]="(settingsForm.controls.MAPFalgorithm.invalid) ? 'danger' : 'basic'">
-            <nb-option value="A*">A*</nb-option>
-            <nb-option value="A*+ID">A*+ID</nb-option>
-            <nb-option value="A*+OD">A*+OD</nb-option>
-            <nb-option value="A*+ID+OD">A*+ID+OD</nb-option>
-            <nb-option value="CBS">CBS</nb-option>
-            <nb-option value="CP">CP</nb-option>
-            <nb-option value="ICTS">ICTS</nb-option>
-            <nb-option value="ICTS+ID">ICTS+ID</nb-option>
+            <nb-option-group title="A*">
+              <nb-option value="A*">A*</nb-option>
+              <nb-option value="A*+ID">A*+ID</nb-option>
+              <nb-option value="A*+OD">A*+OD</nb-option>
+              <nb-option value="A*+ID+OD">A*+ID+OD</nb-option>
+            </nb-option-group>
+            <nb-option-group title="CP">
+              <nb-option value="CP">CP</nb-option>
+            </nb-option-group>
+            <nb-option-group title="ICTS">
+              <nb-option value="ICTS">ICTS</nb-option>
+              <nb-option value="ICTS+ID">ICTS+ID</nb-option>
+            </nb-option-group>
+            <nb-option-group title="ICR">
+            <nb-option value="ICR+A*">ICR+A*</nb-option>
+              <nb-option value="ICR+A*+OD">ICR+A*+OD</nb-option>
+              <nb-option value="ICR+CP">ICR+CP</nb-option>
+              <nb-option value="ICR+ICTS">ICR+ICTS</nb-option>
+            </nb-option-group>
           </nb-select>
         </div>
         <div class="form-group col-6">

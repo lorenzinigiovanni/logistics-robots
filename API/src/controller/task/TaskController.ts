@@ -293,7 +293,13 @@ export class TaskController {
             'SAPF': settings.SAPFalgorithm,
             'costFunction': settings.costFunction,
             'heuristic': settings.heuristic,
+            'subSolver': '',
         };
+
+        if (settings.MAPFalgorithm.includes('ICR')) {
+            jsonList.MAPF = settings.MAPFalgorithm.split('+', 1)[0];
+            jsonList.subSolver = settings.MAPFalgorithm.substring(settings.MAPFalgorithm.indexOf('+') + 1);
+        }
 
         const inputFilePath = path.join(maofBuildDir, 'input.json');
         const outputFilePath = path.join(maofBuildDir, 'output.json');

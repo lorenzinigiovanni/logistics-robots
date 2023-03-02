@@ -392,6 +392,83 @@ export class MapController {
 
                 res.status(200).send();
             });
+
+        app.route('/map/jsonforbenchmarks')
+            .get(async (req, res) => {
+                const [settings] = await Settings.find();
+
+                if (settings == null) {
+                    throw new Error('Settings not found');
+                }
+
+                const nodes = await MapNode.createQueryBuilder('node')
+                    .orderBy('node.value', 'ASC')
+                    .getMany();
+
+                const edges = await MapEdge
+                    .createQueryBuilder('edge')
+                    .leftJoin('edge.node1', 'node1')
+                    .addSelect(['node1.ID', 'node1.value'])
+                    .leftJoin('edge.node2', 'node2')
+                    .addSelect(['node2.ID', 'node2.value'])
+                    .getMany();
+
+                const rooms = await Room
+                    .createQueryBuilder('room')
+                    .leftJoinAndSelect('room.node', 'node')
+                    .getMany();
+
+                // generate nodes list
+                const nodeList = Array.from(Array(nodes.length), () => Array(4).fill(0));
+                for (let i = 0; i < nodes.length; i++) {
+                    // value (starts from 1), ID (starts from 0), x, y
+                    nodeList[i] = [nodes[i].value, nodes[i].value - 1, nodes[i].x, nodes[i].y];
+                }
+
+                // generate rooms list
+                const roomList = Array.from(Array(rooms.length), () => Array(4).fill(0));
+                for (let i = 0; i < rooms.length; i++) {
+                    // value (starts from 1), ID (starts from 0), x, y
+                    roomList[i] = [rooms[i].node.value, rooms[i].node.value - 1, rooms[i].node.x, rooms[i].node.y];
+                }
+
+                // generate adjacency list
+                const adjacencyList = Array.from(Array(nodes.length), () => Array(nodes.length).fill(0));
+                for (let i = 0; i < nodes.length; i++) {
+                    adjacencyList[i][i] = 1;
+
+                    const node = nodes.find((n: MapNode) => n.value === i + 1);
+
+                    if (node == null) {
+                        throw new Error('Node not found');
+                    }
+
+                    const filteredEdges = edges.filter((e: MapEdge) => e.node1.ID === node.ID);
+
+                    for (const edge of filteredEdges) {
+                        const j = edge.node2.value - 1;
+
+                        adjacencyList[i][j] = 1;
+                        adjacencyList[j][i] = 1;
+                    }
+                }
+
+                const jsonList = {
+                    'rooms': roomList,
+                    'nodes': nodeList,
+                    'connect': adjacencyList,
+                    'MAPF': settings.MAPFalgorithm,
+                    'SAPF': settings.SAPFalgorithm,
+                    'costFunction': settings.costFunction,
+                    'heuristic': settings.heuristic,
+                };
+                const json = JSON.stringify(jsonList);
+
+                const inputFilePath = path.join(__dirname, '..', '..', '..', '..', 'benchmarks', 'template.json');
+                await fs.writeFile(inputFilePath, json, 'utf8');
+
+                res.status(200).send();
+            });
     }
 
 }
